@@ -1,20 +1,27 @@
-# QGIS for "Japanese Politics"
+# Visualise the numbers & statistics on Maps - Visualisation with QGIS
 
 ## Materials
 
 ### Base maps and map data
 - [Geospatial Information Authority of Japan (GSI) tiles (国土地理院タイル)](https://maps.gsi.go.jp/development/ichiran.html)
 - [OpenStreetMap raster tile providers](https://wiki.openstreetmap.org/wiki/Raster_tile_providers)
-- [Statistical data and map data (polygons) for single-member districts of the House of Representatives (衆議院議員選挙の小選挙区の統計データ及び地図データ（ポリゴンデータ）の提供ページ)](https://gtfs-gis.jp/senkyoku/)
-- [Municipality and electoral district topography data – sample viewer (市区町村・選挙区地形データ 表示サンプル Viewer)](https://smartnews-smri.github.io/japan-topography/viewer/)
-- [Municipality and electoral district topography data – GitHub (市区町村・選挙区地形データ 表示サンプル GitHub)](https://github.com/smartnews-smri/japan-topography)
+- [National Land Numerical Information: Administrative Areas, N03-2025 (国土数値情報 行政区域データ)](https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2025.html) – municipality polygons, CC BY 4.0, reference date 2025-01-01, one GeoJSON per prefecture
 
-### Data (selection)
+### Data
+- [Statistics on Foreign Residents (在留外国人統計), December 2025, e-Stat](https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&toukei=00250012&tstat=000001018034&cycle=1&year=20250&month=24101212&tclass1=000001060399&result_back=1&tclass2val=0)
+- [Codes for prefectures and municipalities (都道府県コード及び市区町村コード), Ministry of Internal Affairs and Communications](https://www.soumu.go.jp/denshijiti/code.html) – the same 5-digit codes are used in the polygon data
 
-- [Japan – election statistics (日本-選挙に関する統計)](https://ndlsearch.ndl.go.jp/rnavi/politics/post_204111)
-- [Results of the 51st House of Representatives general election and the Supreme Court judges' national review (preliminary) (第51回衆議院議員総選挙・最高裁判所裁判官国民審査結果調（速報）)](https://www.soumu.go.jp/main_content/001055230.pdf)
+The class table `./assets/aichi_permanent_residents_202512.csv` was extracted from the e-Stat table (Aichi Prefecture, one row per municipality or ward of Nagoya):
 
-51st House of Representatives general election = lower house election of 2026-02-08
+| Column | Meaning |
+|---|---|
+| `city_code` | 5-digit municipality code (2 digits prefecture + 3 digits municipality); join key |
+| `municipality` | name |
+| `pr_all` | all foreign residents with the status "permanent resident" (永住者) |
+| `pr_brazil` | of these, Brazilian nationals |
+| `pr_korea` | of these, South Korean nationals (without "special permanent residents", 特別永住者) |
+
+Cleaning done before class: thousands separators (`4’182`) removed, the total row removed, and the two municipalities missing in the Korea table (東栄町, 豊根村) set to 0.
 
 ## Example walkthrough
 
@@ -34,31 +41,29 @@ Minimum zoom level: 5
 5. Select the newly added tile connection from the drop-down menu and click "Add". The layer is added.
 
 ### Adding vector data
-1. On the [sample viewer (市区町村・選挙区地形データ 表示サンプル)](https://smartnews-smri.github.io/japan-topography/viewer/), select "選挙区" (electoral districts) and "愛知県" (Aichi Prefecture).
-2. Click "GeoJsonデータをダウンロード" (download GeoJSON data). The data is downloaded.
-3. Drag and drop the GeoJSON file into QGIS to add it as a layer.
+1. Open the [N03-2025 page](https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2025.html) and download the GeoJSON of Aichi Prefecture (愛知県, code 23).
+2. Unzip it and drag and drop the `.geojson` file into QGIS to add it as a layer.
+3. Open the attribute table. The column `N03_007` holds the 5-digit municipality code. One municipality can consist of several polygons, so the file has more features than municipalities.
 
-### Creating statistical data linked to map features
-1. Create a table from the [results of the 51st House of Representatives general election and the Supreme Court judges' national review (preliminary) (第51回衆議院議員総選挙・最高裁判所裁判官国民審査結果調（速報）)](https://www.soumu.go.jp/main_content/001055230.pdf).
-2. Load the table (CSV format, `./assets/aichi_votes_2026.csv`) into QGIS as a layer.
-3. Right-click the vector layer > Properties > "Joins" > select the CSV layer to add the table's columns to the attribute table of the vector layer.
-4. We want to visualize the values of "LDP percentage". However, the values in the table are stored as strings (they use a decimal comma), so the following conversion is necessary in QGIS: right-click the layer > "Open Attribute Table" > turn on "Toggle editing mode" (pencil icon) > "Open field calculator" > enter the settings as shown in the screenshot below and click "OK". Name the new field `LDP percentage neu` and set its type to "Decimal number (real)". This creates a new column containing numbers.
-   This is the formula:
-
-```
-to_real(replace("aichi_LDP percentage", ',', '.'))
-```
-
-![screenshot](./assets/img.png)
+### Linking statistical data to map features
+1. Drag and drop `./assets/aichi_permanent_residents_202512.csv` into QGIS.
+2. Right-click the polygon layer > Properties > "Joins" > "+".
+3. Join layer: the CSV layer. Join field: `city_code`. Target field: `N03_007`. Click OK.
+4. Open the attribute table of the polygon layer: the columns `pr_all`, `pr_brazil` and `pr_korea` are now attached. Polygons without a match (e.g. the unassigned area `23000`) stay empty (NULL).
 
 ### Visualizing the statistics
 1. Right-click the layer > Properties.
 2. Symbology > select "Graduated" at the top.
-3. Enter "LDP percentage neu" as the "Value". Adjust the interval size as needed, then click "Classify".
+3. Enter `pr_brazil` as the "Value". Choose a colour ramp and the number of classes, then click "Classify".
+4. Change the "Mode" (Equal Interval, Equal Count (Quantile), Natural Breaks (Jenks), ...) and compare the maps.
 
 ### Exporting the visualization for your own work
 1. Select "New Print Layout".
 2. Add the map, legend, labels, etc. to the canvas.
 3. Export the result as an image.
 
-![Example](./assets/test.png)
+## Pitfalls when visualizing counts
+
+See the slides (`qgis_for_socialsciences_en_slides.md`): classification, counts vs. rates, small numbers, area bias, missing vs. zero, category definitions.
+
+The earlier walkthrough with the 2026 election data (electoral districts of Aichi, decimal comma conversion) is kept in the git history (`ab61f5d`).
