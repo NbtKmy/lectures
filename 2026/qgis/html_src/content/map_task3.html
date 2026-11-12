@@ -1,0 +1,16 @@
+<div class="mapbox" id="mapbox-task3">
+  <div class="map-ui">
+    <label for="minutes-task3">Walking time</label>
+    <span class="range">
+      <input id="minutes-task3" type="range" min="10" max="30" step="10" value="30" aria-describedby="readout-task3">
+      <span class="ticks" aria-hidden="true"><span>10 min</span><span>20</span><span>30</span></span>
+    </span>
+  </div>
+  <div class="map" id="map-task3" data-map role="region" aria-label="Map of the area within a walk of any of 41 hospitals around Moriyama Ward. Use the slider to change the walking time."></div>
+  <div class="readout" id="readout-task3" aria-live="polite">
+    <div class="big"><span data-percent></span> <span class="unit">of Moriyama residents live within a <span data-minutes></span>-minute walk of a hospital</span></div>
+    <p data-count></p>
+    <p class="caution"><strong>Approximate, potential access</strong> — not actual use of care.</p>
+    <p class="fine">Computed with a different method from Task 2 (a 30 m buffer around walkable roads, not a smoothed walking-time surface), so do not compare the two numbers.</p>
+  </div>
+</div>

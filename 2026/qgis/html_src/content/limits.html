@@ -1,0 +1,20 @@
+    <h2>Limits · What these numbers can and cannot say</h2>
+    <p>Every map today gave a number. Here is how far each number can be trusted — three limits, in plain words.</p>
+
+    <h3>1 · The 30 m buffer is an approximation</h3>
+    <p>The reach in Task 3 is not a true "30 minutes on foot" area. It takes the roads reachable on foot and draws a 30 m strip around them. A wider or narrower strip would give a different population. The walkable roads come from OpenStreetMap, selected by provisional rules, and nobody has checked that every crossing and connection works in real life. A small hole inside a reach is often just a block of houses away from the road, not a processing error.</p>
+
+    <h3>2 · Population is spread by area</h3>
+    <p>The population grid has 250 m cells, and a cell cut by a boundary is split by area, as if people were spread evenly. In reality they live in buildings. There is a second gap: 96 cells in the ward have no population value at all (<code>NULL</code>). By eye they sit on parks, rivers and woods, but the real reason, such as no residents, a suppressed value or a failed join, has not been checked. We did not turn them into 0. They are left out of the sums, so the shares are based on the cells that do have a value.</p>
+
+    <h3>3 · This is potential access, not use of care</h3>
+    <p>The question answered is "could a person walk to a hospital in this time?" It says nothing about who actually goes, whether the hospital has the right doctors, whether there is room for more patients, or how healthy people are. The list holds the 41 hospitals in or within 3 km of the ward, with no distinction by type or speciality. Read 62.60% as a potential, geographic share: a useful first look, not a finding.</p>
+
+    <h3>So what for your own research?</h3>
+    <p>Before you trust or publish a map, ask three questions of your own data:</p>
+    <ul>
+      <li><strong>What is the denominator?</strong> A count mostly shows where many people live. A rate needs a base, and a tiny base makes wild rates.</li>
+      <li><strong>What is the unit?</strong> A coloured area is not the people in it. Large, empty areas can dominate the picture.</li>
+      <li><strong>What is missing, and is missing zero?</strong> Decide for each gap: zero, not available, or suppressed. Say it in the legend.</li>
+    </ul>
+    <p>Whatever you map, write down your choices (classification, speed, buffer width, date of the data). The number depends on them.</p>

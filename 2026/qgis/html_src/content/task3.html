@@ -1,0 +1,32 @@
+    <h2>Task 3 · Walking access across Moriyama Ward</h2>
+    <p><strong>Question:</strong> of all the people living in Moriyama Ward, what share can walk to at least one hospital in 10, 20 or 30 minutes? About 7 minutes, slides only — you will not repeat these steps today.</p>
+{{map_task3}}
+
+    <h3>The result</h3>
+    <table class="data">
+      <thead><tr><th>Walking time</th><th>Residents within reach</th><th>Share</th></tr></thead>
+      <tbody>
+        <tr><td>10 min</td><td>31,287.80</td><td>17.90%</td></tr>
+        <tr><td>20 min</td><td>81,492.41</td><td>46.61%</td></tr>
+        <tr><td>30 min</td><td>109,452.93</td><td>62.60%</td></tr>
+      </tbody>
+    </table>
+    <p class="fine">All shares are out of 174,833.87 estimated residents of the ward. Numbers are estimates, so the decimals are not meant to be exact.</p>
+
+    <h3>Four steps</h3>
+    <ol>
+      <li><strong>Reach of each hospital.</strong> For each of 41 hospitals in or within 3 km of the ward, find the roads reachable on foot (4 km/h) within 10, 20 and 30 minutes. Draw a 30 m buffer around those roads.</li>
+      <li><strong>Dissolve.</strong> For each time, merge the 41 buffers into one shape. A person who lives near two hospitals is counted once.</li>
+      <li><strong>Clip.</strong> Cut the merged shape to the ward boundary.</li>
+      <li><strong>Count people.</strong> Use area apportioning on the 250 m population grid: people inside the shape divided by all people in the ward.</li>
+    </ol>
+    <div class="watch">
+      <p><strong>Why Dissolve matters.</strong> Adding up the people near each hospital would count some residents several times. Merging first removes the overlaps.</p>
+    </div>
+
+    <div class="note">
+      <p><strong>Approximate, potential access.</strong> These are estimates of who <em>could</em> walk to a hospital, based on roads and a buffer. They do not show who actually goes there, or whether a hospital can treat them. 62.60% is a result of this method, not a verified fact.</p>
+      <p>This reach was built with a different method from Task 2 (a buffer around reachable roads instead of a smoothed walking-time surface), so do not compare the two numbers.</p>
+    </div>
+
+    <p>More in <a href="#limits">Limits</a>.</p>

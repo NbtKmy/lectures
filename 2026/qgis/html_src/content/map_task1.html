@@ -1,0 +1,23 @@
+<div class="mapbox" id="mapbox-task1">
+  <div class="map-ui">
+    <div class="seg" role="group" aria-label="What the colours show">
+      <button type="button" data-measure="count" aria-pressed="true">Count</button>
+      <button type="button" data-measure="rate" aria-pressed="false">Rate</button>
+    </div>
+    <label>Classes
+      <select data-classes>
+        <option>3</option><option>4</option><option selected>5</option><option>6</option><option>7</option>
+      </select>
+    </label>
+    <label>Mode
+      <select data-mode>
+        <option value="equal">Equal interval</option>
+        <option value="quantile">Quantile</option>
+        <option value="jenks">Natural breaks</option>
+      </select>
+    </label>
+  </div>
+  <div class="map" id="map-task1" data-map role="region" aria-label="Map of Aichi municipalities. Hover or tap a municipality to read its numbers."></div>
+  <ul class="legend" data-legend aria-label="Legend"></ul>
+  <p class="map-note" data-note></p>
+</div>

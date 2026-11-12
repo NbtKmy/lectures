@@ -1,0 +1,80 @@
+    <h2>Task 1 · Foreign permanent residents in Aichi</h2>
+    <p><strong>Goal:</strong> build a colour-coded map of Aichi from a plain table of numbers, then change one setting and watch the story change. About 25 minutes, done together.</p>
+    <p class="fine">Menu names follow QGIS 3.44; other versions differ slightly.</p>
+
+    <h3>What you need</h3>
+    <ul>
+      <li><a href="https://github.com/NbtKmy/lectures/blob/main/2026/assets/aichi_admin_fields2025.geojson">aichi_admin_fields2025.geojson</a> — municipality boundaries of Aichi (MLIT N03, 1 January 2025).</li>
+      <li><a href="https://github.com/NbtKmy/lectures/blob/main/2026/assets/aichi_permanent_residents_202512.csv">aichi_permanent_residents_202512.csv</a> — one row per municipality (Nagoya: per ward): <code>city_code</code>, <code>pr_all</code>, <code>pr_brazil</code>, <code>pr_korea</code>.</li>
+    </ul>
+    <p><code>pr_all</code> counts foreigners with the status <em>permanent resident</em> (永住者). <code>pr_brazil</code> is the part of them with Brazilian nationality. Both files share a 5-digit municipality code: <code>23201</code> is <strong>23</strong> (Aichi) + <strong>201</strong> (Toyohashi). That code is the key that lets you join them.</p>
+
+    <h3>1 · Base map</h3>
+    <ol>
+      <li>Choose <strong>Layer ▸ Add Layer ▸ Add XYZ Layer…</strong>. The Data Source Manager opens on the <strong>XYZ</strong> tab.</li>
+      <li>Click <strong>New</strong>.</li>
+      <li>Name: <code>GSI standard</code></li>
+      <li>URL: <code>https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png</code></li>
+      <li>Min. Zoom level: <code>5</code>. Click <strong>OK</strong>.</li>
+      <li>Select <code>GSI standard</code> in the list, click <strong>Add</strong>, then <strong>Close</strong>.</li>
+    </ol>
+
+    <h3>2 · Municipality polygons</h3>
+    <ol start="7">
+      <li>Drag <code>aichi_admin_fields2025.geojson</code> into the QGIS window.</li>
+      <li>Right-click the new layer ▸ <strong>Open Attribute Table</strong>.</li>
+      <li>Find the column <code>N03_007</code>: it is the municipality code. There are more rows than municipalities, because islands and exclaves are separate polygons. One row, <code>23000</code>, is the <em>unassigned area</em> (所属未定地).</li>
+    </ol>
+
+    <h3>3 · Join the numbers</h3>
+    <ol start="10">
+      <li>Drag <code>aichi_permanent_residents_202512.csv</code> into the QGIS window. It appears as a table without a map.</li>
+      <li>Double-click the polygon layer to open its <strong>Properties</strong>, then choose <strong>Joins</strong>.</li>
+      <li>Click the green <strong>+</strong>.</li>
+      <li>Join layer: the CSV. Join field: <code>city_code</code>. Target field: <code>N03_007</code>.</li>
+      <li>Tick <strong>Custom field name prefix</strong> and delete the text in the box, so the new fields keep short names. Click <strong>OK</strong>.</li>
+      <li>Open the attribute table again: <code>pr_all</code>, <code>pr_brazil</code> and <code>pr_korea</code> are attached.</li>
+    </ol>
+    <p class="fine">If every joined value is empty, the two key fields differ in type (number vs. text). Check both in the attribute table.</p>
+
+    <h3>4 · Colour by number</h3>
+    <ol start="16">
+      <li>Open the layer <strong>Properties ▸ Symbology</strong>. At the top, change <strong>Single Symbol</strong> to <strong>Graduated</strong>.</li>
+      <li>Value: <code>pr_brazil</code>. Pick a colour ramp. Classes: <code>5</code>.</li>
+      <li>Click <strong>Classify</strong>, then <strong>OK</strong>.</li>
+    </ol>
+    <div class="note">
+      <p><strong>Surprise 1 — the classes decide the picture.</strong> With the default Equal Interval, almost every municipality lands in the lowest colour. Reopen Symbology and change <strong>Mode</strong> to <strong>Equal Count (Quantile)</strong>, click <strong>Classify</strong>. Then try <strong>Natural Breaks (Jenks)</strong>. Same data, three different maps. No mode is neutral, so say which one you used.</p>
+    </div>
+
+    <h3>5 · From counts to rates</h3>
+    <ol start="19">
+      <li>Open the polygon layer's <strong>Field Calculator</strong> (<kbd>Ctrl</kbd>+<kbd>I</kbd>; <kbd>⌘</kbd>+<kbd>I</kbd> on a Mac).</li>
+      <li>Tick <strong>Create virtual field</strong>. Output field name: <code>rate_brazil</code>. Type: <strong>Decimal number (real)</strong>.</li>
+      <li>Expression: <code>"pr_brazil" / "pr_all" * 100</code>. Click <strong>OK</strong>.</li>
+      <li>Back in <strong>Symbology</strong>, set Value to <code>rate_brazil</code> and click <strong>Classify</strong>.</li>
+    </ol>
+    <div class="note">
+      <p><strong>Surprise 2 — counts mostly show where many people live.</strong> By count the top three are Toyohashi (豊橋市, 4,182), Toyota (豊田市, 3,563) and Nishio (西尾市, 2,491). By share of all permanent residents the lead goes to Hekinan (碧南市, 64%), Shinshiro (新城市, 62%) and Toyone (豊根村, 60%). Toyone is 6 of 10 people.</p>
+    </div>
+
+    <h3>6 · Export (optional)</h3>
+    <ol start="23">
+      <li><strong>Project ▸ New Print Layout</strong>. Add a Map, a Legend, a Scale bar and a Title.</li>
+      <li><strong>Layout ▸ Export as Image</strong>.</li>
+    </ol>
+    <p>Before you export: legend labels should read like words, not <code>pr_brazil</code>. Keep the base map pale so the data colours stand out. Put the source and date in the caption.</p>
+
+    <div class="watch">
+      <p><strong>Watch out</strong></p>
+      <ul>
+        <li><strong>Small numbers make wild rates.</strong> Shitara (設楽町) has 7 permanent residents in all; 3 Brazilians already read as 42.86%. Always look at the counts behind a rate.</li>
+        <li><strong>Missing is not zero.</strong> The unassigned area <code>23000</code> has no data. It stays empty after the join and must not be coloured as 0.</li>
+        <li><strong>Know what the category means.</strong> <em>Permanent resident</em> is one residence status. Special permanent residents (特別永住者) are a separate group and are not included.</li>
+      </ul>
+      <p>More on what these maps can and cannot say: <a href="#limits">Limits</a>.</p>
+    </div>
+
+    <h3>Same maps, in your browser</h3>
+    <p>Switch between Count and Rate and change the Mode here: the same maps you just built, without QGIS. Hover or tap a municipality to read its numbers.</p>
+{{map_task1}}

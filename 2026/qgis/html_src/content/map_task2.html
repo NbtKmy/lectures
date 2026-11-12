@@ -1,0 +1,17 @@
+<div class="mapbox" id="mapbox-task2">
+  <fieldset class="map-ui layers">
+    <legend>Layers</legend>
+    <label><input type="checkbox" data-layer="boundary" checked> Ward boundary</label>
+    <label><input type="checkbox" data-layer="reach" checked> 10-min reach</label>
+    <label><input type="checkbox" data-layer="mesh" checked> Population mesh</label>
+    <label><input type="checkbox" data-layer="roads" checked> Walkable roads</label>
+    <label><input type="checkbox" data-layer="hospital" checked> Hospital</label>
+  </fieldset>
+  <div class="map" id="map-task2" data-map role="region" aria-label="Map of the 10-minute walking reach around Kawashima Hospital. Hover or tap a mesh cell to read its estimated population."></div>
+  <ul class="legend" data-legend aria-label="Mesh population legend"></ul>
+  <div class="readout" aria-live="polite">
+    <div class="big" data-total></div>
+    <p data-summary></p>
+    <p class="fine">Computed with a different method from Task 3, so do not compare the two numbers.</p>
+  </div>
+</div>

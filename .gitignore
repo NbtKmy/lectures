@@ -48,6 +48,7 @@ images/
 !2026/assets/moriyama_admin_field.gpkg
 !2026/assets/moriyama_hospital_test.gpkg
 !2026/assets/moriyama_hospitals.gpkg
+!2026/assets/moriyama_buffer_hospitals.gpkg
 !2026/assets/moriyama_service_area_lines.gpkg
 !2026/assets/moriyama_test_10min_polygon_clean.gpkg
 !2026/assets/moriyama_test_10min_intersection_with_population_clean.gpkg
@@ -60,3 +61,9 @@ images/
 
 # Session design doc (mentions the participant profile)
 2026/qgis/html_session_design.md
+
+# Build cache for the HTML session page
+2026/qgis/html_src/.cache/
+
+# Python bytecode
+__pycache__/
