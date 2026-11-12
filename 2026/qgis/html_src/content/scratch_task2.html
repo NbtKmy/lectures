@@ -1,0 +1,194 @@
+    <p>In the session you opened a finished project and clicked through it. Here you build it yourself, from the public downloads to the number: <strong>how many people live within a 10-minute walk of Kawashima Hospital (川島病院)</strong>, Moriyama Ward, Nagoya. The answer in the session was about 5,421.</p>
+    <p>It is the long way round. Most steps are short; the downloads and the road query take the time. You can jump in at any checkpoint: each one names the file in the <a href="https://github.com/NbtKmy/lectures/tree/main/2026/assets">repository</a> that you can load instead of making it yourself. Menu names follow QGIS 3.44.</p>
+
+    <div class="note">
+      <p><strong>Same ballpark, not the same digits.</strong> OpenStreetMap changes every day, so the road network you download will not be the one used in the session. Expect a result close to 5,421, not exactly 5,421. The population grid and the hospital are fixed, so only the roads move the number.</p>
+    </div>
+
+    <h3 id="step-0">Step 0 · Set up</h3>
+    <ol>
+      <li>Make a folder, for example <code>moriyama/</code>. Start a new QGIS project and save it there as <code>moriyama.qgz</code>. (Task 3 needs the saved project, because its scripts write next to it.)</li>
+      <li>Click the CRS button at the bottom right of the QGIS window. Search for <code>6675</code> and choose <strong>JGD2011 / Japan Plane Rectangular CS VII</strong>. This is a projected system in metres, made for Aichi.</li>
+      <li>Install two plugins: <strong>Plugins ▸ Manage and Install Plugins…</strong>, search for <code>QuickOSM</code> and <code>QNEAT3</code>.</li>
+    </ol>
+    <div class="watch">
+      <p><strong>One rule for the whole page.</strong> Every layer you save gets CRS <code>EPSG:6675</code>. The walking distance and the buffer below are measured in the units of the layer. In a latitude/longitude system those units are degrees, and <code>666.67</code> degrees is nonsense. To save a layer: right-click ▸ <strong>Export ▸ Save Features As…</strong>, format <strong>GeoPackage</strong>, set the CRS, set the file name.</p>
+    </div>
+
+    <h3 id="step-1">Step 1 · The ward boundary</h3>
+    <p>You already have the boundaries from Task 1: <code>aichi_admin_fields2025.geojson</code> (MLIT N03, 2025). Moriyama Ward is the polygon with municipality code <code>23113</code>.</p>
+    <ol>
+      <li>Drag <code>aichi_admin_fields2025.geojson</code> into QGIS.</li>
+      <li>Open the <strong>Processing Toolbox</strong> (<kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Alt</kbd>+<kbd>T</kbd>) and run <strong>Extract by expression</strong>. Expression: <code>"N03_007" = '23113'</code>. Run.</li>
+      <li>Run <strong>Reproject layer</strong> on the result. Target CRS: <code>EPSG:6675</code>. Save the output as <code>moriyama_admin_field.gpkg</code>.</li>
+    </ol>
+    <div class="check">
+      <p><strong>Checkpoint.</strong> One polygon, ward name 守山区. Repository file: <code>moriyama_admin_field.gpkg</code>.</p>
+    </div>
+
+    <h3 id="step-2">Step 2 · A 3 km buffer around the ward</h3>
+    <p>The population grid, the roads and (in Task 3) the hospitals are all cut with this buffer, not with the ward itself. People walk across ward borders, so the working area must reach past it.</p>
+    <ol>
+      <li>Run <strong>Buffer</strong>. Input: <code>moriyama_admin_field</code>. Distance: <code>3000</code> (metres). Save as <code>moriyama_buffer_3km.gpkg</code>.</li>
+    </ol>
+    <div class="check">
+      <p><strong>Checkpoint.</strong> One polygon, a bit more than 3 km wider than the ward on every side.</p>
+    </div>
+
+    <h3 id="step-3">Step 3 · The population grid</h3>
+    <p>The 2020 Census publishes population on a grid of about 250 m cells. You need two downloads from <a href="https://www.e-stat.go.jp/gis">e-Stat</a> (統計地理情報システム): the <em>boundaries</em> of the cells, and a <em>table</em> with one population value per cell. The two meet on the cell code <code>KEY_CODE</code>.</p>
+    <p class="fine">e-Stat changes its menus now and then. The file names below are the reliable anchors.</p>
+
+    <h3>3a · Cell boundaries</h3>
+    <ol>
+      <li>Go to <a href="https://www.e-stat.go.jp/gis/statmap-search?type=2">境界データダウンロード</a>. Choose the 2020 Census (令和２年国勢調査), the <strong>250 m mesh</strong> (5次メッシュ), Shapefile.</li>
+      <li>Download two sheets: <code>MESH05236</code> and <code>MESH05237</code>. Moriyama Ward lies across both.</li>
+      <li>Unzip them. Keep the <code>.shp</code>, <code>.shx</code>, <code>.dbf</code> and <code>.prj</code> files of each together in one folder.</li>
+      <li>Drag both <code>.shp</code> files into QGIS.</li>
+      <li>Run <strong>Merge vector layers</strong> on the two. Destination CRS: <code>EPSG:6675</code>. Save as <code>mesh_merged.gpkg</code>. (It is large: about 200,000 cells.)</li>
+      <li>Run <strong>Extract by location</strong>. Input: <code>mesh_merged</code>. Predicate: <strong>intersect</strong>. Compare against: <code>moriyama_buffer_3km</code>. Save as <code>mesh_local.gpkg</code>.</li>
+    </ol>
+    <div class="watch">
+      <p><strong>Cut first, join second.</strong> The first time we did this, the table was joined to all 200,000 cells and then filtered. QGIS stopped responding. Cutting down to the local cells first keeps everything light.</p>
+    </div>
+
+    <h3>3b · Population table</h3>
+    <ol>
+      <li>Go to <a href="https://www.e-stat.go.jp/gis/statmap-search?type=1">統計データダウンロード</a>. Choose the 2020 Census, the 250 m mesh, Aichi (愛知県). The file you need is the one named <code>tblT001142Q23</code>. It holds, among other things, the total population of each cell.</li>
+      <li>Add it with <strong>Layer ▸ Add Layer ▸ Add Delimited Text Layer…</strong>. File format: <strong>CSV</strong>. Encoding: <code>Shift_JIS</code> (also listed as <code>CP932</code>). Geometry definition: <strong>No geometry (attribute only table)</strong>.</li>
+      <li>Open its attribute table. Row 1 is a line of Japanese column descriptions, not a cell. It will simply find no partner in the next step. Because of this row, QGIS reads every column as <em>text</em>. You fix that in step 3d.</li>
+    </ol>
+
+    <h3>3c · Join and save</h3>
+    <ol>
+      <li>Double-click <code>mesh_local</code> ▸ <strong>Joins</strong> ▸ green <strong>+</strong>. Join layer: the CSV. Join field: <code>KEY_CODE</code>. Target field: <code>KEY_CODE</code>. <strong>Keep the default prefix</strong> (<code>tblT001142Q23_</code>): the expression in step 3d uses it.</li>
+      <li>A join is only virtual. Make it real: right-click <code>mesh_local</code> ▸ <strong>Export ▸ Save Features As…</strong> ▸ GeoPackage, CRS <code>EPSG:6675</code>, file <code>moriyama_mesh_3km.gpkg</code>. Add it to the project.</li>
+    </ol>
+
+    <h3>3d · Text to number</h3>
+    <ol>
+      <li>Open the <strong>Field Calculator</strong> on <code>moriyama_mesh_3km</code>. Create a new field <code>population</code>, type <strong>Whole number (integer)</strong>, expression:
+<pre><code>to_int("tblT001142Q23_T001142001")</code></pre></li>
+      <li>Save the edits (the pencil button, then the save button).</li>
+    </ol>
+    <div class="watch">
+      <p><strong>Empty is not zero.</strong> Some cells have no population value in the table. They stay <code>NULL</code>. Do not turn them into 0: nobody knows from this table whether they are empty land or hidden by the statistics office. See <a href="qgis_session.html#limits">Limits</a>.</p>
+    </div>
+    <div class="check">
+      <p><strong>Checkpoint.</strong> <code>moriyama_mesh_3km</code> has <strong>2,745</strong> cells. Select by expression <code>"population" IS NULL</code>: <strong>308</strong> cells are selected. Repository file: <code>moriyama_mesh_3km.gpkg</code>.</p>
+    </div>
+
+    <h3 id="step-4">Step 4 · Walkable roads</h3>
+    <h3>4a · Download the roads</h3>
+    <ol>
+      <li><strong>Plugins ▸ QuickOSM ▸ QuickOSM</strong>. On the <strong>Quick Query</strong> tab, Key: <code>highway</code>, Value: leave empty (every road, path and footway).</li>
+      <li>Query area: <strong>Layer Extent</strong>, layer <code>moriyama_buffer_3km</code>. This uses the rectangle around the buffer, which is a little larger than the buffer itself. That is fine, and it keeps routes at the edge from being cut off.</li>
+      <li>Run. QuickOSM returns three layers: points, lines, polygons. Keep only the <strong>lines</strong>; they are the network. (The points are things like traffic lights, and the polygons are road areas.)</li>
+      <li>Save the lines layer as <code>moriyama_osm_highway_line.gpkg</code> with CRS <code>EPSG:6675</code>. QuickOSM delivers latitude/longitude, so this export <em>is</em> the reprojection.</li>
+    </ol>
+
+    <h3>4b · Keep what a pedestrian can use</h3>
+    <ol>
+      <li>Run <strong>Extract by expression</strong> on <code>moriyama_osm_highway_line</code> with this expression, and save as <code>moriyama_osm_walkable_preliminary.gpkg</code>:
+<pre><code>"highway" IN (
+    'residential', 'living_street', 'unclassified',
+    'tertiary', 'tertiary_link',
+    'secondary', 'secondary_link',
+    'primary', 'primary_link',
+    'service', 'footway', 'pedestrian', 'path', 'steps'
+)
+AND (
+    "foot" IS NULL OR "foot" NOT IN ('no', 'private')
+)
+AND (
+    "access" IS NULL
+    OR "access" NOT IN ('no', 'private')
+    OR "foot" IN ('yes', 'designated', 'permissive')
+)</code></pre></li>
+    </ol>
+    <p>In words: ordinary streets, footways and steps; but not where OpenStreetMap says <code>foot=no</code> or <code>private</code>. Motorways and cycle-only paths are left out on purpose.</p>
+    <div class="watch">
+      <p><strong>A first cut, not a verdict.</strong> This rule ignores opening hours, missing pavements, and lines that cross without joining (a bridge over a road, an underpass). Whether the network is connected is something you would check in real research.</p>
+    </div>
+    <div class="check">
+      <p><strong>Checkpoint.</strong> About 50,000 lines, from about 52,000 before the filter. (The session run had 50,075 of 52,200; yours will differ a little. See the note at the top.)</p>
+    </div>
+
+    <h3 id="step-5">Step 5 · The hospital</h3>
+    <p>Hospital locations come from MLIT's <a href="https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P04-2020.html">Medical Institutions data (P04)</a>, 2020 edition, CC BY 4.0. Download the Aichi file (<code>P04-20_23</code>; the GeoJSON version is easiest) and unzip it. The field <code>P04_001</code> is the class of facility: <code>1</code> hospital, <code>2</code> clinic, <code>3</code> dental clinic. <code>P04_002</code> is the name.</p>
+    <ol>
+      <li>Drag <code>P04-20_23.geojson</code> into QGIS.</li>
+      <li>Run <strong>Extract by expression</strong>:
+<pre><code>"P04_001" = 1 AND "P04_002" LIKE '%川島病院%'</code></pre></li>
+      <li>Run <strong>Reproject layer</strong> to <code>EPSG:6675</code>. Save as <code>moriyama_hospital_test.gpkg</code>.</li>
+    </ol>
+    <div class="check">
+      <p><strong>Checkpoint.</strong> One point: 医療法人和光会 川島病院, address 名古屋市守山区白山3-501. Repository file: <code>moriyama_hospital_test.gpkg</code>.</p>
+    </div>
+
+    <h3 id="step-6">Step 6 · How far can you walk? As lines</h3>
+    <p>Walking speed is set to 4 km/h. Ten minutes is then 4000 m × 10/60 h = <strong>666.67 m</strong> of walking along the roads.</p>
+    <ol>
+      <li>In the Processing Toolbox run <strong>Service area (from layer)</strong> (under <em>Network analysis</em>) with:
+        <ul>
+          <li>Vector layer representing network: <code>moriyama_osm_walkable_preliminary</code></li>
+          <li>Path type to calculate: <strong>Shortest</strong></li>
+          <li>Vector layer with start points: <code>moriyama_hospital_test</code></li>
+          <li>Travel cost: <code>666.67</code> (metres, because the path type is Shortest)</li>
+          <li>Direction field: empty. Default direction: <strong>Both directions</strong>. Topology tolerance: <code>0</code></li>
+          <li>Service area (boundary nodes): skip the output. Service area (lines): save as <code>moriyama_service_area_lines.gpkg</code></li>
+        </ul>
+      </li>
+    </ol>
+    <div class="check">
+      <p><strong>Checkpoint.</strong> One feature: all the roads reachable on foot in 10 minutes, as a web of lines around the hospital. Repository file: <code>moriyama_service_area_lines.gpkg</code>. This is already an answer in the form of lines; the next step turns it into an area so we can count people inside it.</p>
+    </div>
+
+    <h3 id="step-7">Step 7 · The same reach, as an area</h3>
+    <p>QNEAT3 interpolates a walking-distance surface over the road network. You then cut that surface at 666.67 m.</p>
+    <ol>
+      <li>In the Processing Toolbox, under <strong>QNEAT3</strong>, run <strong>Iso-Area as Polygons (from Layer)</strong>:
+        <ul>
+          <li>Network Layer: <code>moriyama_osm_walkable_preliminary</code>; Start Points: <code>moriyama_hospital_test</code>; Unique Point ID Field: <code>fid</code></li>
+          <li>Size of Iso-Area: <code>666.67</code>; Contour Interval: <code>666.67</code>; Cell size: <code>10</code> (metres)</li>
+          <li>Strategy: Shortest; Default direction: Both; Topology tolerance: <code>0</code></li>
+        </ul>
+      </li>
+      <li>You get <strong>Output Interpolation</strong> (a raster) and <strong>Output Polygon</strong>. <strong>Use the raster.</strong> Check it: Properties ▸ Information shows CRS <code>EPSG:6675</code>, cells of about 10 m, NoData <code>-9999</code>, and values from about 18 up to about 731.</li>
+      <li><strong>Raster ▸ Raster Calculator</strong>. Expression (use the layer name as QGIS shows it):
+<pre><code>("Output Interpolation@1" &gt;= 0)
+AND ("Output Interpolation@1" &lt;= 666.67)</code></pre>
+        Output layer: <code>moriyama_10min_mask.tif</code>; output extent and CRS from the Interpolation layer. Cells inside the reach become <code>1</code>, other cells <code>0</code>.</li>
+      <li>Processing Toolbox ▸ <strong>Polygonize (raster to vector)</strong>. Input: the mask, band 1, field name <code>DN</code>. Save as <code>moriyama_10min_polygon_raw.gpkg</code>.</li>
+      <li><strong>Keep only the inside.</strong> Run <strong>Extract by expression</strong> on the raw polygons: <code>"DN" = 1</code>. Save as <code>moriyama_10min_polygon_clean.gpkg</code>.</li>
+    </ol>
+    <div class="watch">
+      <p><strong>Never skip the last step.</strong> Polygonize also draws the outside cells (<code>DN = 0</code>) as polygons. In the first run of this analysis those slipped into the count: the answer was about 6,878 instead of 5,421, some 1,457 people too many. The tell-tale was an outline that looked doubled on the map. The geometry was valid; the selection was wrong.</p>
+    </div>
+    <div class="note">
+      <p><strong>Why not the polygon QNEAT3 offers?</strong> It is drawn by a different routine, which on the author's Mac stopped with <code>ModuleNotFoundError: No module named 'contourpy'</code> (a Python package that then also failed macOS's code-signing check). Going through the raster avoids that, and it is the route whose numbers are reported in the session. Its shape is not identical to the polygon output, so do not mix them. The plugin has since been rebuilt as <em>QNEAT 4</em>, where this tool is called <em>Iso-area from layer</em>; these steps were not tested with it.</p>
+    </div>
+    <div class="check">
+      <p><strong>Checkpoint.</strong> The clean polygon is one feature. Draw it under the service-area lines: the lines should sit inside it, apart from a few places at the edge where the interpolation is only approximate. Repository file: <code>moriyama_test_10min_polygon_clean.gpkg</code>.</p>
+    </div>
+
+    <h3 id="step-8">Step 8 · Count the people</h3>
+    <p>A grid cell half inside the reach gets half its people. This is <em>area apportioning</em>, and it assumes people are spread evenly in a cell.</p>
+    <ol>
+      <li>Open the Field Calculator on <code>moriyama_mesh_3km</code>. New field <code>mesh_area_m2</code>, type <strong>Decimal number (real)</strong>, expression <code>area($geometry)</code>. Do this <strong>before</strong> the intersection: you need each cell's full area.</li>
+      <li>Run <strong>Intersection</strong>. Input layer: <code>moriyama_mesh_3km</code>. Overlay layer: <code>moriyama_10min_polygon_clean</code>. Save as <code>moriyama_10min_intersection.gpkg</code>. Every cell that touches the reach is now cut to the reach's edge.</li>
+      <li>Field Calculator on the intersection. New field <code>pop_est</code>, type <strong>Decimal number (real)</strong>:
+<pre><code>"population" * area($geometry) / "mesh_area_m2"</code></pre>
+        The piece's area divided by the full cell's area, times the cell's population. Use <code>area($geometry)</code> in both places so the two areas are measured the same way.</li>
+      <li>Run <strong>Basic statistics for fields</strong> on the intersection, field <code>pop_est</code>. Read <strong>Sum</strong>.</li>
+    </ol>
+    <div class="check">
+      <p><strong>Checkpoint.</strong> <strong>20</strong> pieces, <code>Sum</code> close to <strong>5,420.9</strong> in the session run, so about 5,421 people. A few percent either way is to be expected with today's roads. Repository file: <code>moriyama_test_10min_intersection_with_population_clean.gpkg</code> (20 pieces).</p>
+    </div>
+
+    <h3>What to write down</h3>
+    <p>The number is only meaningful with its conditions. Keep a note of: the date of the OpenStreetMap download, the road filter above, walking speed 4 km/h, 666.67 m, the CRS, the cell size 10 m, the <code>DN = 1</code> filter, the area formula, and your QGIS version.</p>
+
+    <div class="redo">
+      <p><strong>Next:</strong> <a href="qgis_task3_scratch.html">Task 3 from scratch</a> builds on steps 0–4 of this page: the same boundary, buffer, grid and roads, now for all 41 hospitals at once.</p>
+    </div>

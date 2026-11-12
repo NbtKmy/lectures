@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%230e1320%27/%3E%3Cpath d=%27M6 22l6-14 6 10 4-6 4 10z%27 fill=%27%23f2b84b%27/%3E%3C/svg%3E">
+<title>QGIS Task 3 from scratch</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0e1320;
+  --bg-raised: #141b2d;
+  --panel: #182034;
+  --line: #2a3550;
+  --text: #e8e6df;
+  --text-2: #b9bfd0;
+  --muted: #8f98af;
+  --gold: #f2b84b;
+  --blue: #3987e5;
+  --blue-soft: #9ec5f4;
+  --nodata: #4a4d55;
+  --radius: 10px;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif CJK JP", Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", "Noto Sans CJK JP", Roboto, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 400 1.0625rem/1.6 var(--sans);
+  overflow-x: hidden;
+}
+.wrap { width: 100%; max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+
+a { color: var(--blue-soft); text-underline-offset: 2px; }
+a:hover { color: #fff; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.2; letter-spacing: -0.01em; }
+h2 { font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.1rem); margin: 0 0 0.6em; }
+h3 { font-size: 1.2rem; margin: 1.8em 0 0.5em; }
+p, li { max-width: 68ch; }
+code, kbd { overflow-wrap: anywhere; font-family: var(--mono); font-size: 0.9em; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 0.05em 0.35em; }
+ol, ul { padding-left: 1.3em; }
+li { margin: 0.35em 0; }
+
+/* Hero */
+.hero {
+  padding: 48px 0 40px;
+  background:
+    radial-gradient(900px 380px at 15% -10%, rgba(57, 135, 229, 0.22), transparent 70%),
+    repeating-radial-gradient(circle at 85% 120%, transparent 0 22px, rgba(158, 197, 244, 0.05) 22px 23px),
+    var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+.hero h1 {
+  font-size: clamp(2rem, 1.2rem + 4vw, 3.6rem);
+  margin: 0 0 0.35em;
+  max-width: 18ch;
+  text-wrap: balance;
+}
+.lede { font-size: 1.15rem; color: var(--text-2); max-width: 52ch; margin: 0 0 32px; }
+
+.plates { list-style: none; margin: 0; padding: 0; display: grid; gap: 20px; grid-template-columns: repeat(3, 1fr); }
+.plates li { margin: 0; max-width: none; }
+.plate {
+  display: flex; flex-direction: column; gap: 6px; height: 100%;
+  color: var(--text); text-decoration: none;
+}
+.plate-art {
+  position: relative; display: block; aspect-ratio: 8 / 5;
+  background: var(--bg-raised); border: 1px solid var(--line); border-radius: 4px;
+  transition: border-color 0.15s;
+}
+.plate-art::before, .plate-art::after {
+  content: ""; position: absolute; width: 14px; height: 14px; border: 2px solid var(--gold); pointer-events: none;
+}
+.plate-art::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+.plate-art::after { right: -1px; bottom: -1px; border-left: 0; border-top: 0; }
+.plate-art svg { display: block; width: 100%; height: 100%; }
+.plate:hover .plate-art { border-color: var(--gold); }
+.plate-title { font: 600 1.25rem/1.2 var(--serif); margin-top: 8px; }
+.plate-text { color: var(--text-2); font-size: 0.95rem; }
+
+/* Start here */
+.start { padding: 28px 0; background: var(--bg-raised); border-bottom: 1px solid var(--line); }
+.start h2 { font-size: 1.4rem; }
+
+/* Tabs */
+.tabbar {
+  position: sticky; top: 0; z-index: 1000;
+  background: rgba(14, 19, 32, 0.94); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tabs button {
+  flex: 0 0 auto; appearance: none; background: none; border: 0; border-bottom: 3px solid transparent;
+  color: var(--text-2); font: 600 1rem/1 var(--sans); padding: 16px 18px 13px; cursor: pointer; white-space: nowrap;
+}
+.tabs button:hover { color: #fff; }
+.tabs button[aria-selected="true"] { color: #fff; border-bottom-color: var(--gold); }
+
+.panels { padding-top: 28px; padding-bottom: 56px; min-height: 60vh; }
+[hidden] { display: none !important; }
+
+/* Callouts */
+.watch, .note {
+  border-left: 3px solid var(--gold); background: var(--panel); border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 12px 16px; margin: 20px 0; max-width: 72ch;
+}
+.note { border-left-color: var(--blue); }
+.watch > :first-child, .note > :first-child { margin-top: 0; }
+.watch > :last-child, .note > :last-child { margin-bottom: 0; }
+
+/* Maps */
+.mapbox { margin: 24px 0; }
+.map {
+  width: 100%; height: clamp(320px, 62vh, 560px);
+  background: #0b0f1a; border: 1px solid var(--line); border-radius: var(--radius);
+}
+.leaflet-container { background: #0b0f1a; font-family: var(--sans); }
+.leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.8) contrast(0.9) saturate(0.55); }
+.leaflet-control-attribution { background: rgba(14, 19, 32, 0.8) !important; color: var(--muted) !important; }
+.leaflet-control-attribution a { color: var(--blue-soft) !important; }
+.leaflet-control-zoom a { background: var(--panel) !important; color: var(--text) !important; border-color: var(--line) !important; }
+.leaflet-tooltip { background: var(--panel); color: var(--text); border: 1px solid var(--line); box-shadow: none; font-size: 0.9rem; }
+.leaflet-tooltip-top::before { border-top-color: var(--line); }
+
+.map-ui { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; margin: 0 0 12px; }
+.map-ui label { color: var(--text-2); font-size: 0.95rem; display: inline-flex; gap: 8px; align-items: center; }
+.map-ui select, .map-ui input[type="number"] {
+  background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font: inherit;
+}
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button {
+  appearance: none; background: var(--panel); color: var(--text-2); border: 0; padding: 7px 14px; font: 600 0.95rem var(--sans); cursor: pointer;
+}
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--blue); color: #fff; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 10px 0 0; padding: 0; list-style: none; font-size: 0.9rem; color: var(--text-2); }
+.legend li { display: inline-flex; align-items: center; gap: 6px; margin: 0; }
+.swatch { width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(255, 255, 255, 0.25); flex: none; }
+.swatch.nodata { background: repeating-linear-gradient(45deg, var(--nodata) 0 3px, #2d3039 3px 6px); }
+.readout { margin: 12px 0 0; padding: 12px 16px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+.readout .big { font: 600 2rem/1.1 var(--serif); }
+input[type="range"] { accent-color: var(--gold); width: min(100%, 360px); }
+
+/* Footer */
+.footer { border-top: 1px solid var(--line); background: var(--bg-raised); padding: 24px 0 40px; color: var(--muted); font-size: 0.9rem; }
+.footer p { margin: 0 0 8px; color: var(--text-2); font-weight: 600; }
+.footer ul { margin: 0; }
+
+@media (max-width: 720px) {
+  .plates { grid-template-columns: 1fr; }
+  .hero { padding-top: 32px; }
+  .tabs button { padding: 14px 14px 11px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; animation: none !important; }
+}
+
+/* Layer toggles and small print */
+.layers { border: 0; padding: 0; margin: 0 0 12px; }
+.layers legend { float: left; margin-right: 14px; padding: 0; color: var(--text-2); font-size: 0.95rem; }
+.layers label { cursor: pointer; }
+.layers input { accent-color: var(--gold); }
+.fine { font-size: 0.9rem; color: var(--muted); margin: 6px 0 0; }
+.map-note { color: var(--text-2); font-size: 0.95rem; margin: 10px 0 0; }
+
+.range { display: inline-flex; flex-direction: column; width: min(100%, 360px); }
+.range input[type="range"] { width: 100%; margin: 0; }
+.ticks { display: flex; justify-content: space-between; color: var(--muted); font-size: 0.85rem; padding: 0 2px; }
+.readout .unit { font: 400 1rem/1.4 var(--sans); color: var(--text-2); }
+.readout .caution { color: var(--gold); margin: 8px 0 0; }
+
+/* Tables */
+table.data { border-collapse: collapse; margin: 12px 0; min-width: min(100%, 420px); }
+table.data th, table.data td { padding: 8px 14px; border-bottom: 1px solid var(--line); text-align: right; }
+table.data th:first-child, table.data td:first-child { text-align: left; }
+table.data th { color: var(--text-2); font-weight: 600; }
+
+.start-grid { display: grid; gap: 8px 32px; grid-template-columns: repeat(3, 1fr); }
+.start-grid h3 { margin-top: 0.4em; font-size: 1.05rem; }
+.start-grid ul { margin: 0; padding-left: 1.1em; font-size: 0.95rem; }
+@media (max-width: 720px) { .start-grid { grid-template-columns: 1fr; } }
+
+/* From-scratch pages */
+pre {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 12px 16px; overflow-x: auto; margin: 14px 0; max-width: 100%;
+  font: 0.9rem/1.5 var(--mono); color: var(--text);
+}
+pre code { background: none; border: 0; padding: 0; overflow-wrap: normal; font-size: inherit; }
+.check { border-left: 3px solid #5ec08a; background: var(--panel); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 16px; margin: 20px 0; max-width: 72ch; }
+.check > :first-child { margin-top: 0; }
+.check > :last-child { margin-bottom: 0; }
+.scratch-head { padding: 28px 0 24px; border-bottom: 1px solid var(--line); background: var(--bg-raised); }
+.scratch-head h1 { font-size: clamp(1.8rem, 1.2rem + 3vw, 2.8rem); margin: 0.3em 0 0.3em; }
+.scratch-head .lede { margin-bottom: 0; }
+.scratch-head .back { margin: 0; font-size: 0.95rem; }
+.scratch-body { padding-top: 12px; padding-bottom: 56px; }
+.redo { margin: 28px 0 0; padding: 12px 16px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); max-width: 72ch; }
+.redo p { margin: 0; }
+table.data td.l, table.data th.l { text-align: left; }
+.tablewrap { overflow-x: auto; max-width: 100%; }
+</style>
+</head>
+<body>
+<header class="scratch-head" id="top">
+  <div class="wrap">
+    <p class="back"><a href="qgis_session.html#task3">← Back to the session handout</a></p>
+    <h1>Task 3 from scratch</h1>
+    <p class="lede">From one hospital to 41: how many of Moriyama Ward's residents can walk to a hospital in 10, 20 or 30 minutes.</p>
+  </div>
+</header>
+
+<main class="wrap scratch-body">
+    <p>In the session you saw one result: <strong>the share of Moriyama Ward's residents who can walk to at least one hospital in 10, 20 or 30 minutes</strong>. Here is how to get it yourself. It reuses what you built for one hospital in <a href="qgis_task2_scratch.html">Task 2 from scratch</a> and adds only what is new: all hospitals at once, a different way of drawing the reach, and the count over the whole ward.</p>
+    <p>The heavy lifting is done by four short Python scripts that you run in the QGIS Python console. They are in the <a href="https://github.com/NbtKmy/lectures/tree/main/2026/assets">repository</a>. You do not have to write any code. Menu names follow QGIS 3.44.</p>
+
+    <div class="note">
+      <p><strong>Same ballpark, not the same digits.</strong> The roads come from OpenStreetMap, which changes daily. Your percentages will be close to 17.90%, 46.61% and 62.60%, not identical.</p>
+    </div>
+
+    <h3 id="step-1">Step 1 · What you need from Task 2</h3>
+    <p>Do <a href="qgis_task2_scratch.html#step-0">steps 0 to 4</a> of the Task 2 page. You do <em>not</em> need steps 5 to 8: those are the one-hospital test.</p>
+    <ul>
+      <li>the ward boundary (<code>moriyama_admin_field</code>) and the 3 km buffer (<code>moriyama_buffer_3km</code>)</li>
+      <li>the population grid <code>moriyama_mesh_3km</code>, with its <code>population</code> field</li>
+      <li>the walkable roads <code>moriyama_osm_walkable_preliminary</code></li>
+      <li>the project saved as <code>moriyama.qgz</code> (the scripts write to a folder <code>access_results/</code> next to it)</li>
+    </ul>
+    <p>The scripts find layers <strong>by name</strong>. In the Layers panel, select a layer and press <kbd>F2</kbd> to rename it. Rename the ward boundary from <code>moriyama_admin_field</code> to <code>moriyama_boundary</code>. The four names must be exactly:</p>
+    <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th class="l">Layer name</th><th class="l">What it is</th></tr></thead>
+      <tbody>
+        <tr><td class="l"><code>moriyama_boundary</code></td><td class="l">ward outline, one polygon</td></tr>
+        <tr><td class="l"><code>moriyama_mesh_3km</code></td><td class="l">population grid with <code>population</code></td></tr>
+        <tr><td class="l"><code>moriyama_osm_walkable_preliminary</code></td><td class="l">walkable roads</td></tr>
+        <tr><td class="l"><code>moriyama_buffer_hospitals</code></td><td class="l">the hospitals (made in step 2)</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>All four must be in <code>EPSG:6675</code>.</p>
+
+    <h3 id="step-2">Step 2 · All hospitals in and around the ward</h3>
+    <p>In Task 2 you picked one hospital. Now take every hospital within 3 km of the ward, so that residents near the border are counted with the hospitals just across it.</p>
+    <ol>
+      <li>If <code>P04-20_23.geojson</code> is not in the project, drag it in (see <a href="qgis_task2_scratch.html#step-5">Task 2, step 5</a>).</li>
+      <li><strong>Extract by expression</strong>: <code>"P04_001" = 1</code> (class 1 = hospital; clinics and dental clinics are left out).</li>
+      <li><strong>Extract by location</strong> on the result. Predicate: <strong>intersect</strong>. Compare against: <code>moriyama_buffer_3km</code>.</li>
+      <li><strong>Reproject layer</strong> to <code>EPSG:6675</code>. Save as <code>moriyama_buffer_hospitals.gpkg</code> and add it to the project.</li>
+    </ol>
+    <div class="check">
+      <p><strong>Checkpoint.</strong> <strong>41</strong> points (the repository file <code>moriyama_buffer_hospitals.gpkg</code> has 41). Eight of them stand inside the ward; Kawashima Hospital is one of the eight.</p>
+    </div>
+
+    <h3 id="step-3">Step 3 · The reach of every hospital: run the scripts</h3>
+    <p>Task 2 drew the reach with a smoothed surface. Doing that 41 times, three times each, is too much by hand, and the polygon routine needs a plugin that does not run on every machine. So Task 3 uses a simpler way to turn roads into an area: <strong>take all roads reachable within the time, and put a 30 m buffer around them</strong>. That makes it an approximation (see the note at the end), and it is also why the Task 2 and Task 3 numbers must not be compared.</p>
+
+    <h3>How to run a script</h3>
+    <ol>
+      <li><strong>Plugins ▸ Python Console</strong> (<kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Alt</kbd>+<kbd>P</kbd>).</li>
+      <li>Click <strong>Show Editor</strong>, then <strong>Open Script…</strong>, and choose the <code>.py</code> file.</li>
+      <li>Click <strong>Run Script</strong> (the green triangle). Read the messages in the console below.</li>
+    </ol>
+    <p>Download the scripts from the repository (click a name, then <em>Download raw file</em>). The messages they print are in Japanese; I translate the important ones.</p>
+
+    <h3>3a · Thirty minutes</h3>
+    <p><a href="https://github.com/NbtKmy/lectures/blob/main/2026/assets/find_roads_to_hospitals.py"><code>find_roads_to_hospitals.py</code></a> runs <em>Service area (from layer)</em> for all 41 hospitals at once: shortest path, both directions, <strong>2000 m</strong> (4 km/h × 30 min). It needs the layers <code>moriyama_buffer_hospitals</code> and <code>moriyama_osm_walkable_preliminary</code>, and stops if their CRS is not EPSG:6675.</p>
+    <div class="check">
+      <p><strong>Checkpoint.</strong> The console prints 病院数 (hospitals): <strong>41</strong> and 到達道路の地物数 (reachable-road features): <strong>41</strong>, one feature per hospital. 道路へ接続できなかった病院 (hospitals that could not be attached to the road network): <strong>0</strong>. A layer <code>moriyama_all_hospitals_30min_lines</code> appears.</p>
+    </div>
+    <div class="watch">
+      <p>That layer is <em>temporary</em> (a small chip next to its name in the Layers panel). Keep QGIS open until step 4 is done, or export it: right-click ▸ Export ▸ Save Features As… ▸ GeoPackage, and add the saved file with the same layer name.</p>
+    </div>
+
+    <h3>3b · Ten and twenty minutes</h3>
+    <p><a href="https://github.com/NbtKmy/lectures/blob/main/2026/assets/create_roads_to_hospitals_10and20min.py"><code>create_roads_to_hospitals_10and20min.py</code></a> does the same for <strong>666.67 m</strong> and <strong>1333.33 m</strong> and saves them as GeoPackages in <code>access_results/</code> next to your project. If a file is already there, it skips that time and says so; delete the file to run it again.</p>
+    <div class="check">
+      <p><strong>Checkpoint.</strong> Two new layers, <code>moriyama_hospitals_10min_lines</code> and <code>moriyama_hospitals_20min_lines</code>, with <strong>41</strong> features each.</p>
+    </div>
+    <p>These are <em>cumulative</em> reaches: "within 10 minutes", "within 20 minutes", "within 30 minutes". The 30-minute reach contains the 20-minute one, which contains the 10-minute one. They are not bands.</p>
+
+    <h3 id="step-4">Step 4 · From roads to areas</h3>
+    <p><a href="https://github.com/NbtKmy/lectures/blob/main/2026/assets/line_to_30mbuffer_polygon.py"><code>line_to_30mbuffer_polygon.py</code></a> takes the three line layers and runs <em>Buffer</em> (30 m) on each, <strong>without dissolving</strong>, so every hospital keeps its own shape. It writes <code>moriyama_hospitals_10min_buffer30m.gpkg</code>, <code>…20min…</code> and <code>…30min…</code>.</p>
+    <div class="check">
+      <p><strong>Checkpoint.</strong> Three polygon layers with <strong>41</strong> features each. Switch them on one after another: each should be wider than the last.</p>
+    </div>
+    <p>Optional but quick: check that the three layers contain the same 41 hospitals. In the Python console, paste:</p>
+<pre><code>from qgis.core import QgsProject
+p = QgsProject.instance()
+names = {m: f'moriyama_hospitals_{m}min_buffer30m' for m in (10, 20, 30)}
+d = {}
+for m, n in names.items():
+    rows = [(f['fid'], f['P04_002']) for f in p.mapLayersByName(n)[0].getFeatures()]
+    assert len(rows) == len(set(k for k, v in rows)) == 41
+    d[m] = dict(rows)
+assert d[10] == d[20] == d[30]
+print('41 hospitals x 3 reaches: same IDs and names')</code></pre>
+
+    <h3 id="step-5">Step 5 · Count the residents</h3>
+    <p><a href="https://github.com/NbtKmy/lectures/blob/main/2026/assets/analysis_B.py"><code>analysis_B.py</code></a> answers the question of this task. For each of the three times it:</p>
+    <ol>
+      <li><strong>Fixes</strong> any broken geometry in the 41 buffers.</li>
+      <li><strong>Dissolves</strong> the 41 buffers into one shape: the area within reach of <em>at least one</em> hospital. A resident near two hospitals is therefore counted once.</li>
+      <li><strong>Clips</strong> that shape to <code>moriyama_boundary</code>, so only the ward's residents are counted.</li>
+      <li>Applies <strong>area apportioning</strong> on the population grid twice: for the whole ward (the denominator) and for the clipped reach (the numerator). The share is numerator ÷ denominator × 100.</li>
+    </ol>
+    <p>Cells whose <code>population</code> is <code>NULL</code> are left out of both counts, not set to 0. The script writes <code>moriyama_analysis_B_accessibility.csv</code> and three coverage layers into <code>access_results/</code>. It refuses to overwrite earlier results: delete those four files before you run it again.</p>
+    <div class="check">
+      <p><strong>Checkpoint.</strong> The numbers in the session were:</p>
+      <div class="tablewrap">
+      <table class="data">
+        <thead><tr><th>Walking time</th><th>Residents within reach</th><th>Share</th></tr></thead>
+        <tbody>
+          <tr><td>10 min</td><td>31,287.80</td><td>17.90%</td></tr>
+          <tr><td>20 min</td><td>81,492.41</td><td>46.61%</td></tr>
+          <tr><td>30 min</td><td>109,452.93</td><td>62.60%</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>The whole ward: <strong>174,833.87</strong> estimated residents, with <strong>96</strong> grid cells that have no population value. Your figures should be close. In any case they must rise from 10 to 30 minutes and stay between 0% and 100%; the script warns you if not. Repository files: <code>moriyama_analysis_B_accessibility.csv</code> and <code>moriyama_analysis_B_{10,20,30}min_coverage.gpkg</code>.</p>
+    </div>
+
+    <h3>If something stops</h3>
+    <ul>
+      <li><strong>"レイヤが見つかりません" / "レイヤがありません"</strong> (layer not found): a layer name differs from the table in step 1.</li>
+      <li><strong>"CRSが異なります"</strong> (different CRS): re-export that layer in EPSG:6675.</li>
+      <li><strong>"…が41地物ではありません"</strong> (not 41 features): step 2 gave a different number of hospitals than the script expects. Count them; if your count is right, change the <code>41</code> in the script.</li>
+      <li><strong>"FileExistsError"</strong>: delete the output files named in the message.</li>
+    </ul>
+
+    <div class="note">
+      <p><strong>Approximate, potential access.</strong> The reach is "roads within walking distance, plus 30 m". That is not a true walking-time area, and a different buffer width would change the answer. The result shows who <em>could</em> walk to a hospital, not who does, and says nothing about what the hospital offers. See <a href="qgis_session.html#limits">Limits</a>.</p>
+    </div>
+    <div class="note">
+      <p><strong>Per-hospital counts (analysis A).</strong> The repository also has <code>analysis_A.py</code>, which counts the residents around each of the eight hospitals in the ward separately. It is not part of this task. It holds a fixed list of hospital IDs (<code>fid</code>) from the author's layer. Your <code>fid</code> values depend on how you exported the file, so check and change that list before running it.</p>
+    </div>
+
+    <div class="redo">
+      <p><strong>Back to:</strong> <a href="qgis_task2_scratch.html">Task 2 from scratch</a> · <a href="qgis_session.html#task3">the session handout, Task 3</a></p>
+    </div>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <p>Sources and credits</p>
+    <ul>
+      <li>Road network derived from <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> (ODbL), via QuickOSM.</li>
+      <li>Administrative boundaries (N03) and medical institutions (P04): <a href="https://nlftp.mlit.go.jp/ksj/">National Land Numerical Information, MLIT</a> (CC BY 4.0).</li>
+      <li>Population mesh and mesh boundaries: 2020 Census, <a href="https://www.e-stat.go.jp/gis">e-Stat</a>.</li>
+    </ul>
+  </div>
+</footer>
+</body>
+</html>

@@ -132,5 +132,61 @@ class TestContent(unittest.TestCase):
             self.assertIn(text, start)
 
 
+class TestScratchPages(unittest.TestCase):
+    def pages(self):
+        return {name: build.assemble_scratch(page, SRC) for name, page in build.SCRATCH_PAGES.items()}
+
+    def test_two_pages_defined(self):
+        self.assertEqual(sorted(build.SCRATCH_PAGES), ["qgis_task2_scratch.html", "qgis_task3_scratch.html"])
+
+    def test_pages_are_self_contained(self):
+        for name, html in self.pages().items():
+            self.assertIsNone(re.search(r"\{\{[a-z0-9_]+\}\}", html), name)
+            self.assertIsNone(re.search(r"<script", html), name)
+            self.assertRegex(html, r'<html[^>]*\blang="en"')
+            self.assertIn('name="viewport"', html)
+            self.assertIsNone(re.search(r'<link[^>]+rel=["\']?stylesheet', html), name)
+
+    def test_task2_scratch_content(self):
+        html = self.pages()["qgis_task2_scratch.html"]
+        for text in ("川島病院", "23113", "EPSG:6675", "666.67", '"DN" = 1', "QuickOSM", "MESH05236", "MESH05237",
+                     "tblT001142Q23", "5,421", "2,745", "308", 'id="step-0"', 'id="step-5"', "qgis_task3_scratch.html"):
+            self.assertIn(text, html)
+        # Every file a checkpoint tells the reader to load instead ships in the repository.
+        assets = SRC.parents[1] / "assets"
+        shipped = re.findall(r"Repository files?: <code>([a-z0-9_]+\.gpkg)</code>", html)
+        self.assertGreaterEqual(len(shipped), 6)
+        for fname in shipped:
+            self.assertTrue((assets / fname).exists(), fname)
+
+    def test_task3_scratch_content(self):
+        html = self.pages()["qgis_task3_scratch.html"]
+        for script in ("find_roads_to_hospitals.py", "create_roads_to_hospitals_10and20min.py",
+                       "line_to_30mbuffer_polygon.py", "analysis_B.py"):
+            self.assertIn(script, html)
+            self.assertTrue((SRC.parents[1] / "assets" / script).exists(), script)
+        for text in ("moriyama_boundary", "moriyama_buffer_hospitals", "17.90%", "46.61%", "62.60%",
+                     "174,833.87", "96", "qgis_task2_scratch.html#step-0", "Dissolve", "Clip"):
+            self.assertIn(text, html)
+
+    def test_layer_names_match_scripts(self):
+        html = self.pages()["qgis_task3_scratch.html"]
+        scripts = "".join(
+            (SRC.parents[1] / "assets" / s).read_text(encoding="utf-8")
+            for s in ("find_roads_to_hospitals.py", "analysis_B.py")
+        )
+        for name in re.findall(r'"(moriyama_[a-z0-9_]+)"', scripts):
+            if name.startswith("moriyama_hospitals_") or name.startswith("moriyama_analysis") or "coverage" in name:
+                continue
+            self.assertIn(f"<code>{name}</code>", html)
+
+    def test_handout_links_to_scratch_pages(self):
+        html = assemble()
+        self.assertIn('href="qgis_task2_scratch.html"', panel(html, "task2"))
+        self.assertIn('href="qgis_task3_scratch.html"', panel(html, "task3"))
+        for name, page in build.SCRATCH_PAGES.items():
+            self.assertIn(f'href="qgis_session.html#{page["back_tab"]}"', build.assemble_scratch(page, SRC))
+
+
 if __name__ == "__main__":
     unittest.main()

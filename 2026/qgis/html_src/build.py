@@ -51,6 +51,47 @@ def assemble(data: dict, thumbs: dict[str, str], src_dir: Path = SRC) -> str:
     return render(_read(src_dir, "template.html"), values)
 
 
+SCRATCH_PAGES = {
+    "qgis_task2_scratch.html": {
+        "content": "scratch_task2",
+        "title": "QGIS Task 2 from scratch",
+        "heading": "Task 2 from scratch",
+        "back_tab": "task2",
+        "lede": "From the public downloads to one number: how many people live within a 10-minute walk of Kawashima Hospital.",
+    },
+    "qgis_task3_scratch.html": {
+        "content": "scratch_task3",
+        "title": "QGIS Task 3 from scratch",
+        "heading": "Task 3 from scratch",
+        "back_tab": "task3",
+        "lede": "From one hospital to 41: how many of Moriyama Ward's residents can walk to a hospital in 10, 20 or 30 minutes.",
+    },
+}
+
+
+def assemble_scratch(page: dict, src_dir: Path = SRC) -> str:
+    """Return one from-scratch page; it needs only the stylesheet, no JS or data."""
+    src_dir = Path(src_dir)
+    values = {
+        "style": _read(src_dir, "style.css"),
+        "title": page["title"],
+        "heading": page["heading"],
+        "back_tab": page["back_tab"],
+        "lede": page["lede"],
+        "content": _read(src_dir, f"content/{page['content']}.html"),
+    }
+    return render(_read(src_dir, "template_scratch.html"), values)
+
+
+def write_scratch_pages(src_dir: Path = SRC, out_dir: Path = OUTPUT.parent) -> list[Path]:
+    paths = []
+    for filename, page in SCRATCH_PAGES.items():
+        path = Path(out_dir) / filename
+        path.write_text(assemble_scratch(page, src_dir), encoding="utf-8")
+        paths.append(path)
+    return paths
+
+
 def make_thumbnails(data: dict) -> dict[str, str]:
     from thumbnails import svg_thumbnail
 
@@ -93,5 +134,5 @@ def main() -> Path:
 
 
 if __name__ == "__main__":
-    out = main()
-    print(f"wrote {out} ({out.stat().st_size / 1e6:.2f} MB)")
+    for out in [main(), *write_scratch_pages()]:
+        print(f"wrote {out} ({out.stat().st_size / 1e6:.2f} MB)")
