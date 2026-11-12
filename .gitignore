@@ -31,3 +31,32 @@ images/
 2026/BlueSky_analyse.ipynb
 2026/bluesky_analyse.md
 
+
+# QGIS session (2026/assets): track only the data used in the session.
+# Task 1: aichi_admin_fields2025.geojson, aichi_permanent_residents_202512.csv
+# Task 2: moriyama_admin_field / hospital_test / service_area_lines / test_10min_polygon_clean
+#         / test_10min_intersection_with_population_clean / mesh_3km / hospitals
+# Task 3: moriyama_analysis_B_*_coverage.gpkg, moriyama_analysis_B_accessibility.csv, coverage png
+2026/assets/*.gpkg
+2026/assets/*.geojson
+2026/assets/*.qmd
+2026/assets/*.qlr
+2026/assets/*.aux.xml
+2026/assets/moriyama_*.csv
+2026/assets/moriyama_*.png
+!2026/assets/aichi_admin_fields2025.geojson
+!2026/assets/moriyama_admin_field.gpkg
+!2026/assets/moriyama_hospital_test.gpkg
+!2026/assets/moriyama_hospitals.gpkg
+!2026/assets/moriyama_service_area_lines.gpkg
+!2026/assets/moriyama_test_10min_polygon_clean.gpkg
+!2026/assets/moriyama_test_10min_intersection_with_population_clean.gpkg
+!2026/assets/moriyama_mesh_3km.gpkg
+!2026/assets/moriyama_analysis_B_10min_coverage.gpkg
+!2026/assets/moriyama_analysis_B_20min_coverage.gpkg
+!2026/assets/moriyama_analysis_B_30min_coverage.gpkg
+!2026/assets/moriyama_analysis_B_accessibility.csv
+!2026/assets/moriyama_hospital_distance_30min_coverage.png
+
+# Session design doc (mentions the participant profile)
+2026/qgis/html_session_design.md
