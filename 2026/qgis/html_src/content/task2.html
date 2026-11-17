@@ -18,7 +18,14 @@
       <li>Switch on the walkable roads. These are all the streets reachable on foot within 10 minutes. This is the line version of the answer.</li>
       <li>Switch on the 10-minute reach. It is a smoothed surface of walking time over the road network, cut at 10 minutes. It turns the lines into an area.</li>
       <li>Switch on the population grid, then the 20 pieces inside the reach. Choose the <strong>Identify Features</strong> tool and click a piece: <code>pop_est</code> is the estimated number of people living in that piece.</li>
-      <li>Open the <strong>Basic statistics for fields</strong> tool on the 20 pieces, field <code>pop_est</code>. The sum is 5,420.9 — <strong>about 5,421 people</strong> live within a 10-minute walk of 川島病院.</li>
+      <li>Add up the 20 pieces:
+        <ul>
+          <li>Open the <strong>Processing Toolbox</strong>: <strong>Processing ▸ Toolbox</strong> (<kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Alt</kbd>+<kbd>T</kbd>). It opens as a panel on the right.</li>
+          <li>Type <code>Basic statistics</code> into the search field at the top of the panel. Double-click <strong>Basic statistics for fields</strong> (under <em>Vector analysis</em>).</li>
+          <li>Input layer: the layer with the 20 pieces. Field to calculate statistics on: <code>pop_est</code>. Click <strong>Run</strong>.</li>
+          <li>Read <strong>SUM</strong> in the result (the <strong>Log</strong> tab of the dialog, or the Results Viewer).</li>
+        </ul>
+        The sum is 5,420.9 — <strong>about 5,421 people</strong> live within a 10-minute walk of 川島病院.</li>
     </ol>
 
     <h3>How the number is made</h3>

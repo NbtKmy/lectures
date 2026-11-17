@@ -180,7 +180,7 @@ AND ("Output Interpolation@1" &lt;= 666.67)</code></pre>
       <li>Field Calculator on the intersection. New field <code>pop_est</code>, type <strong>Decimal number (real)</strong>:
 <pre><code>"population" * area($geometry) / "mesh_area_m2"</code></pre>
         The piece's area divided by the full cell's area, times the cell's population. Use <code>area($geometry)</code> in both places so the two areas are measured the same way.</li>
-      <li>Run <strong>Basic statistics for fields</strong> on the intersection, field <code>pop_est</code>. Read <strong>Sum</strong>.</li>
+      <li>In the Processing Toolbox, type <code>Basic statistics</code> into the search field and double-click <strong>Basic statistics for fields</strong> (under <em>Vector analysis</em>). Input layer: the intersection. Field to calculate statistics on: <code>pop_est</code>. Click <strong>Run</strong> and read <strong>SUM</strong> in the <strong>Log</strong> tab.</li>
     </ol>
     <div class="check">
       <p><strong>Checkpoint.</strong> <strong>20</strong> pieces, <code>Sum</code> close to <strong>5,420.9</strong> in the session run, so about 5,421 people. A few percent either way is to be expected with today's roads. Repository file: <code>moriyama_test_10min_intersection_with_population_clean.gpkg</code> (20 pieces).</p>
