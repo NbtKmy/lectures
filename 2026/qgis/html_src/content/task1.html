@@ -32,24 +32,39 @@
       <li>Double-click the polygon layer to open its <strong>Properties</strong>, then choose <strong>Joins</strong>.</li>
       <li>Click the green <strong>+</strong>.</li>
       <li>Join layer: the CSV. Join field: <code>city_code</code>. Target field: <code>N03_007</code>.</li>
-      <li>Tick <strong>Custom field name prefix</strong> and delete the text in the box, so the new fields keep short names. Click <strong>OK</strong>.</li>
-      <li>Open the attribute table again: <code>pr_all</code>, <code>pr_brazil</code> and <code>pr_korea</code> are attached.</li>
+      <li>Leave the other settings as they are and click <strong>OK</strong>.</li>
+      <li>Open the attribute table again. The CSV columns are attached with the layer name as a prefix: <code>aichi_permanent_residents_202512_pr_all</code>, <code>aichi_permanent_residents_202512_pr_brazil</code>, and so on.</li>
     </ol>
     <p class="fine">If every joined value is empty, the two key fields differ in type (number vs. text). Check both in the attribute table.</p>
 
-    <h3>4 · Colour by number</h3>
+    <h3>4 · Turn text into numbers</h3>
+    <p>The joined numbers are left-aligned in the attribute table: QGIS read the CSV columns as text. Text cannot be coloured by size, so make number fields from them.</p>
     <ol start="16">
+      <li>Select the polygon layer and open its <strong>Field Calculator</strong> (<kbd>Ctrl</kbd>+<kbd>I</kbd>; <kbd>⌘</kbd>+<kbd>I</kbd> on a Mac).</li>
+      <li>Tick <strong>Create virtual field</strong>. Output field name: <code>pr_all</code>. Type: <strong>Whole number (integer)</strong>.</li>
+      <li>Expression: <code>to_int("aichi_permanent_residents_202512_pr_all")</code>. Pick the field from <strong>Fields and Values</strong> in the middle list rather than typing it. Click <strong>OK</strong>.</li>
+      <li>Repeat for <code>pr_brazil</code> with <code>to_int("aichi_permanent_residents_202512_pr_brazil")</code>.</li>
+    </ol>
+    <p class="fine">The new fields are right-aligned: they are numbers now. The unassigned area <code>23000</code> stays empty (NULL), not 0.</p>
+
+    <h3>5 · Colour by number</h3>
+    <ol start="20">
       <li>Open the layer <strong>Properties ▸ Symbology</strong>. At the top, change <strong>Single Symbol</strong> to <strong>Graduated</strong>.</li>
       <li>Value: <code>pr_brazil</code>. Pick a colour ramp. Classes: <code>5</code>.</li>
       <li>Click <strong>Classify</strong>, then <strong>OK</strong>.</li>
     </ol>
     <div class="note">
       <p><strong>Surprise 1 — the classes decide the picture.</strong> With the default Equal Interval, almost every municipality lands in the lowest colour. Reopen Symbology and change <strong>Mode</strong> to <strong>Equal Count (Quantile)</strong>, click <strong>Classify</strong>. Then try <strong>Natural Breaks (Jenks)</strong>. Same data, three different maps. No mode is neutral, so say which one you used.</p>
+      <ul>
+        <li><strong>Equal Interval</strong> cuts the range from lowest to highest value into classes of equal width. A few very large values stretch the range, so most places end up in the first class.</li>
+        <li><strong>Equal Count (Quantile)</strong> puts the same number of municipalities into each class. Every colour shows up, but two places with almost the same value can get different colours.</li>
+        <li><strong>Natural Breaks (Jenks)</strong> sets the class limits at the biggest gaps in the data, so values within a class are as close to each other as possible. The limits change with the data, so two Jenks maps cannot be compared directly.</li>
+      </ul>
     </div>
 
-    <h3>5 · From counts to rates</h3>
-    <ol start="19">
-      <li>Open the polygon layer's <strong>Field Calculator</strong> (<kbd>Ctrl</kbd>+<kbd>I</kbd>; <kbd>⌘</kbd>+<kbd>I</kbd> on a Mac).</li>
+    <h3>6 · From counts to rates</h3>
+    <ol start="23">
+      <li>Open the <strong>Field Calculator</strong> again.</li>
       <li>Tick <strong>Create virtual field</strong>. Output field name: <code>rate_brazil</code>. Type: <strong>Decimal number (real)</strong>.</li>
       <li>Expression: <code>"pr_brazil" / "pr_all" * 100</code>. Click <strong>OK</strong>.</li>
       <li>Back in <strong>Symbology</strong>, set Value to <code>rate_brazil</code> and click <strong>Classify</strong>.</li>
@@ -58,8 +73,8 @@
       <p><strong>Surprise 2 — counts mostly show where many people live.</strong> By count the top three are Toyohashi (豊橋市, 4,182), Toyota (豊田市, 3,563) and Nishio (西尾市, 2,491). By share of all permanent residents the lead goes to Hekinan (碧南市, 64%), Shinshiro (新城市, 62%) and Toyone (豊根村, 60%). Toyone is 6 of 10 people.</p>
     </div>
 
-    <h3>6 · Export (optional)</h3>
-    <ol start="23">
+    <h3>7 · Export (optional)</h3>
+    <ol start="27">
       <li><strong>Project ▸ New Print Layout</strong>. Add a Map, a Legend, a Scale bar and a Title.</li>
       <li><strong>Layout ▸ Export as Image</strong>.</li>
     </ol>
