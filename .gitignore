@@ -67,3 +67,9 @@ images/
 
 # Python bytecode
 __pycache__/
+
+# Plan execution scratch
+.superpowers/
+
+# JGD zone finder downloads
+2026/qgis/jgd_zones/src/.cache/

@@ -1,0 +1,20 @@
+zone,roman,epsg,epsg_jgd2000,origin_lat,origin_lon,area_en
+1,I,6669,2443,33.000000,129.500000,Nagasaki; Kagoshima's islands west of 130°E between 27°N and 32°N (Amami to 130°13'E)
+2,II,6670,2444,33.000000,131.000000,"Fukuoka, Saga, Kumamoto, Oita, Miyazaki, Kagoshima (except zone I)"
+3,III,6671,2445,36.000000,132.166667,"Yamaguchi, Shimane, Hiroshima"
+4,IV,6672,2446,33.000000,133.500000,"Kagawa, Ehime, Tokushima, Kochi"
+5,V,6673,2447,36.000000,134.333333,"Hyogo, Tottori, Okayama"
+6,VI,6674,2448,36.000000,136.000000,"Kyoto, Osaka, Fukui, Shiga, Mie, Nara, Wakayama"
+7,VII,6675,2449,36.000000,137.166667,"Ishikawa, Toyama, Gifu, Aichi"
+8,VIII,6676,2450,36.000000,138.500000,"Niigata, Nagano, Yamanashi, Shizuoka"
+9,IX,6677,2451,36.000000,139.833333,"Tokyo (except zones XIV, XVIII, XIX), Fukushima, Tochigi, Ibaraki, Saitama, Chiba, Gunma, Kanagawa"
+10,X,6678,2452,40.000000,140.833333,"Aomori, Akita, Yamagata, Iwate, Miyagi"
+11,XI,6679,2453,44.000000,140.250000,"Hokkaido west: Otaru, Hakodate, Date, Hokuto, Shiribeshi, Oshima, Hiyama; Toyoura, Sobetsu, Toyako"
+12,XII,6680,2454,44.000000,142.250000,Hokkaido centre (except zones XI and XIII)
+13,XIII,6681,2455,44.000000,144.250000,"Hokkaido east: Kitami, Obihiro, Kushiro, Abashiri, Nemuro cities; Tokachi, Kushiro, Nemuro subprefectures; part of Okhotsk"
+14,XIV,6682,2456,26.000000,142.000000,"Tokyo south of 28°N, 140°30'E–143°E (Ogasawara Islands)"
+15,XV,6683,2457,26.000000,127.500000,Okinawa 126°E–130°E (Okinawa Island and nearby)
+16,XVI,6684,2458,26.000000,124.000000,Okinawa west of 126°E (Sakishima Islands)
+17,XVII,6685,2459,26.000000,131.000000,Okinawa east of 130°E (Daito Islands)
+18,XVIII,6686,2460,20.000000,136.000000,"Tokyo south of 28°N, west of 140°30'E (Okinotorishima)"
+19,XIX,6687,2461,26.000000,154.000000,"Tokyo south of 28°N, east of 143°E (Minamitorishima)"
