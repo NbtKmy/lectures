@@ -38,6 +38,9 @@ class TestAssemble(unittest.TestCase):
         self.assertNotIn("all of Japan, one UTM", HTML)
         self.assertNotIn("as most of Kyushu or all of Japan does, one UTM zone", HTML)
 
+    def test_utm_is_spelled_out(self):
+        self.assertIn("UTM (Universal Transverse Mercator)", HTML)
+
     def test_lists_all_19_epsg_codes(self):
         for code in range(6669, 6688):
             self.assertIn(f"EPSG:{code}", HTML)

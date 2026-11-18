@@ -906,6 +906,7 @@ table.zones { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
   <p>JGD2011 replaced JGD2000 after the 2011 Tōhoku earthquake moved eastern Japan by up to several metres. Older data may use JGD2000 (<code>EPSG:2443</code>–<code>EPSG:2461</code>) or the much older Tokyo Datum, which is offset by about 400–450 m. Check the CRS in the metadata of the data. Don't guess.</p>
 
   <h3>When to use UTM instead</h3>
+  <p><strong>UTM (Universal Transverse Mercator)</strong> is a worldwide projected system in metres. It divides the globe into 60 north–south strips, each 6° of longitude wide. It uses the same kind of projection as the plane rectangular zones, but each strip is wider, so distortion is slightly larger. Japan lies in UTM zones 51N to 55N.</p>
   <p>If your study area spans several plane rectangular zones, for example all of Kyushu, the UTM zone that covers it (JGD2011 / UTM zones 51N–55N, <code>EPSG:6688</code>–<code>EPSG:6692</code>) is usually the better choice. For the whole of Japan, which spans five UTM zones, use an equal-area projection for areas or a geographic CRS for display.</p>
 
   <h3>Set it in QGIS</h3>
