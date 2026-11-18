@@ -111,5 +111,24 @@ class TestPlaces(unittest.TestCase):
         self.assertIn(["大阪府大阪市", "大阪府大阪市", 34.7, 135.5], rows)
 
 
+class TestPlaceZones(unittest.TestCase):
+    ZONED = [
+        {"properties": {"zone": 7}, "geometry": {"type": "Polygon", "coordinates": [square(136.0, 35.0, 1.0)]}},
+        {"properties": {"zone": 8}, "geometry": {"type": "Polygon", "coordinates": [square(137.0, 35.0, 1.0)]}},
+    ]
+
+    def test_point_inside_gets_its_zone(self):
+        rows = prep.place_zones([["A", "a", 35.5, 136.5]], self.ZONED)
+        self.assertEqual(rows, [["A", "a", 35.5, 136.5, 7]])
+
+    def test_offshore_point_gets_the_nearest_zone(self):
+        # ~1 km east of the zone-8 square
+        rows = prep.place_zones([["Rock", "rock", 35.5, 138.01]], self.ZONED)
+        self.assertEqual(rows[0][4], 8)
+
+    def test_far_point_is_dropped(self):
+        self.assertEqual(prep.place_zones([["Sea", "sea", 30.0, 150.0]], self.ZONED), [])
+
+
 if __name__ == "__main__":
     unittest.main()

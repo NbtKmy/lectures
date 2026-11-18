@@ -2,7 +2,7 @@
  *
  * zoneAt(lat, lon, zonesGeo) -> zone number 1..19, or null outside every zone.
  * parseLatLon(text) -> [lat, lon] inside Japan's extent, or null.
- * search(places, query, limit) -> [{name, lat, lon}] from rows [name, key, lat, lon].
+ * search(places, query, limit) -> [{name, lat, lon, zone}] from rows [name, key, lat, lon, zone].
  * toPlane(lat, lon, zone) -> {x: northing, y: easting} in metres (needs the global proj4).
  */
 (function (root, factory) {
@@ -64,7 +64,7 @@
 
   // Same rules as prep.fold: lower case, macrons dropped, municipal suffix and separators removed.
   function fold(name) {
-    let s = String(name).trim().toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "");
+    let s = String(name).trim().toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
     s = s.replace(/[-\s](shi|ku|machi|cho|mura|son|gun)$/, "");
     return s.replace(/[-\s']/g, "");
   }
@@ -81,7 +81,7 @@
     }
     const byLength = (a, b) => a[0].length - b[0].length;
     return prefix.sort(byLength).concat(inner.sort(byLength)).slice(0, n)
-      .map((r) => ({ name: r[0], lat: r[2], lon: r[3] }));
+      .map((r) => ({ name: r[0], lat: r[2], lon: r[3], zone: r[4] }));
   }
 
   function toPlane(lat, lon, zone) {

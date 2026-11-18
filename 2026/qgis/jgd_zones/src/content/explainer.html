@@ -28,13 +28,13 @@
   <p>Tools such as <em>Buffer</em>, <em>Distance matrix</em> and the <code>$area</code> and <code>$length</code> expressions use the units of the layer's CRS. In <code>EPSG:4326</code>, a buffer of “500” means 500 <em>degrees</em>, which is larger than the Earth. Reproject the layer to the zone for your area first, and 500 means 500 metres.</p>
 
   <h3>X is north, Y is east</h3>
-  <p>In Japan's plane rectangular coordinates, <strong>X points north and Y points east</strong> — the reverse of the usual maths convention. A table of survey points with columns <code>X</code> and <code>Y</code> usually needs X as the <em>northing</em> and Y as the <em>easting</em>. If your points appear in the sea or rotated by 90°, swap the two columns when you load the CSV.</p>
+  <p>In Japan's plane rectangular coordinates, <strong>X points north and Y points east</strong> — the reverse of the usual maths convention. A table of survey points with columns <code>X</code> and <code>Y</code> usually needs X as the <em>northing</em> and Y as the <em>easting</em>. When you load such a CSV in QGIS, put the <code>Y</code> column in the <em>X field</em> and the <code>X</code> column in the <em>Y field</em>. If you get them the wrong way round, the points come out mirrored across the diagonal and usually land in the sea.</p>
 
   <h3>JGD2000, JGD2011 and Tokyo Datum</h3>
   <p>JGD2011 replaced JGD2000 after the 2011 Tōhoku earthquake moved eastern Japan by up to several metres. Older data may use JGD2000 (<code>EPSG:2443</code>–<code>EPSG:2461</code>) or the much older Tokyo Datum, which is offset by about 400–450 m. Check the CRS in the metadata of the data. Don't guess.</p>
 
   <h3>When to use UTM instead</h3>
-  <p>If your study area spans several zones, as most of Kyushu or all of Japan does, one UTM zone (JGD2011 / UTM zone 51N–55N, <code>EPSG:6688</code>–<code>EPSG:6692</code>) or an equal-area projection is usually the better choice.</p>
+  <p>If your study area spans several plane rectangular zones, for example all of Kyushu, the UTM zone that covers it (JGD2011 / UTM zones 51N–55N, <code>EPSG:6688</code>–<code>EPSG:6692</code>) is usually the better choice. For the whole of Japan, which spans five UTM zones, use an equal-area projection for areas or a geographic CRS for display.</p>
 
   <h3>Set it in QGIS</h3>
   <ol>

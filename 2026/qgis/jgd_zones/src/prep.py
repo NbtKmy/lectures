@@ -163,6 +163,53 @@ def place_rows(geonames_lines: Iterable[str], n03_features: list[dict], pop_min:
     return rows
 
 
+NEAREST_DEG = 0.05  # about 5 km: offshore GeoNames points for islets and capes
+
+
+def _seg_dist2(px: float, py: float, ax: float, ay: float, bx: float, by: float) -> float:
+    dx, dy = bx - ax, by - ay
+    s = 0.0 if dx == dy == 0 else max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)))
+    return (ax + s * dx - px) ** 2 + (ay + s * dy - py) ** 2
+
+
+def place_zones(rows: list[list], zoned_features: list[dict], cell: float = 0.1) -> list[list]:
+    """Append each place's zone, from the detailed (undissolved) zoned pieces.
+
+    A point inside a piece takes its zone; otherwise the zone of the nearest edge within
+    NEAREST_DEG. Places with neither are dropped. The browser's simplified polygons miss
+    small islands, so search hits rely on this zone instead.
+    """
+    pieces: dict[tuple[int, int], list] = {}
+    edges: dict[tuple[int, int], list] = {}
+    key = lambda x, y: (int(x // cell), int(y // cell))  # noqa: E731
+    for f in zoned_features:
+        zone, g = f["properties"]["zone"], f["geometry"]
+        polys = g["coordinates"] if g["type"] == "MultiPolygon" else [g["coordinates"]]
+        for poly in polys:
+            ring = poly[0]
+            xs, ys = [v[0] for v in ring], [v[1] for v in ring]
+            item = (min(xs), min(ys), max(xs), max(ys), ring, zone)
+            for i in range(int(item[0] // cell), int(item[2] // cell) + 1):
+                for j in range(int(item[1] // cell), int(item[3] // cell) + 1):
+                    pieces.setdefault((i, j), []).append(item)
+            for (ax, ay), (bx, by) in zip(ring, ring[1:]):
+                for cellkey in {key(ax, ay), key(bx, by), key((ax + bx) / 2, (ay + by) / 2)}:
+                    edges.setdefault(cellkey, []).append((ax, ay, bx, by, zone))
+    out = []
+    for name, k, lat, lon in rows:
+        zone = next((z for x0, y0, x1, y1, ring, z in pieces.get(key(lon, lat), [])
+                     if x0 <= lon <= x1 and y0 <= lat <= y1 and point_in_ring(lon, lat, ring)), None)
+        if zone is None:
+            ci, cj = key(lon, lat)
+            near = [e for i in (ci - 1, ci, ci + 1) for j in (cj - 1, cj, cj + 1) for e in edges.get((i, j), [])]
+            best = min(((_seg_dist2(lon, lat, *e[:4]), e[4]) for e in near), default=None)
+            if best and best[0] <= NEAREST_DEG ** 2:
+                zone = best[1]
+        if zone is not None:
+            out.append([name, k, lat, lon, zone])
+    return out
+
+
 CACHE = SRC / ".cache"
 DATA = SRC / "data"
 N03_SHP = CACHE / "n03" / "N03-20250101.shp"
@@ -227,6 +274,10 @@ def main() -> None:
 
     with GEONAMES_TXT.open(encoding="utf-8") as f:
         rows = place_rows(f, n03["features"])
+    zoned_fc = json.loads(zoned.read_text(encoding="utf-8"))
+    placed = place_zones(rows, zoned_fc["features"])
+    print(f"places: {len(rows) - len(placed)} dropped with no zone within {NEAREST_DEG}°")
+    rows = placed
     places_out = DATA / "places.json"
     places_out.write_text(json.dumps(rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"places.json: {len(rows)} rows, {places_out.stat().st_size / 1e3:.0f} KB")

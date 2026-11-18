@@ -28,7 +28,8 @@
     maxZoom: 18,
     attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html">地理院タイル</a> · N03 (MLIT) · GeoNames',
   });
-  tiles.on("tileerror", function () { /* offline: keep the zones on the dark background */ });
+  // Offline: keep the zones on the dark background and say why the map looks empty.
+  tiles.once("tileerror", function () { say("Background map not available (offline?). The zones still work."); });
   tiles.addTo(map);
 
   L.geoJSON(DATA.zones, {
@@ -54,8 +55,10 @@
 
   var pin = null;
 
-  function showAt(lat, lon, name, fly) {
-    var zone = Lookup.zoneAt(lat, lon, DATA.zones);
+  // storedZone: a search hit's zone from the detailed boundaries, for islands too small to draw.
+  function showAt(lat, lon, name, fly, storedZone) {
+    var drawn = Lookup.zoneAt(lat, lon, DATA.zones);
+    var zone = drawn !== null ? drawn : storedZone || null;
     if (pin) pin.remove();
     pin = L.circleMarker([lat, lon], { radius: 8, color: "#0e1320", weight: 2, fillColor: "#fff", fillOpacity: 1, interactive: false }).addTo(map);
     if (fly) map.flyTo([lat, lon], Math.max(map.getZoom(), 8), { duration: 0.8 });
@@ -64,7 +67,7 @@
     var coords = "<dt>Lat, lon</dt><dd>" + fmt(lat, 5) + ", " + fmt(lon, 5) + "</dd>";
     if (zone === null) {
       card.innerHTML = where + '<p class="card-zone">No zone</p>' +
-        "<p>Not in a JGD2011 plane rectangular zone. Click on land, or zoom in for small islands.</p><dl>" + coords + "</dl>";
+        "<p>Not in a zone on this simplified map. Very small islands are not drawn: search the island by name instead.</p><dl>" + coords + "</dl>";
       say("");
       return;
     }
@@ -77,8 +80,9 @@
       "<dt>Y (east)</dt><dd>" + fmt(xy.y, 1) + " m</dd>" +
       "<dt>Origin</dt><dd>" + fmt(z.origin_lat, 4) + "°N, " + fmt(z.origin_lon, 4) + "°E</dd>" +
       "<dt>JGD2000</dt><dd>EPSG:" + z.epsg_jgd2000 + "</dd></dl>" +
-      '<p class="card-note">Zone lines are simplified. Within a few hundred metres of a line, check the municipality in the table below.</p>';
-    say("");
+      '<p class="card-note">' + (drawn === null
+        ? "This point lies just outside the simplified shapes on this map (a small island or the coast). Its zone comes from the detailed boundary data."
+        : "Zone lines are simplified. Within a few hundred metres of a line, check the municipality in the table below.") + "</p>";
   }
 
   function highlightRow(zone) {
@@ -104,7 +108,7 @@
 
   function renderHits() {
     hitsEl.innerHTML = hits.map(function (h, i) {
-      var zone = Lookup.zoneAt(h.lat, h.lon, DATA.zones);
+      var zone = h.zone || Lookup.zoneAt(h.lat, h.lon, DATA.zones);
       var tag = zone ? '<span class="hit-zone">' + INFO[zone].roman + "</span>" : "";
       return '<li role="option" id="hit-' + i + '" aria-selected="' + (i === active) + '" data-i="' + i + '">' + esc(h.name) + tag + "</li>";
     }).join("");
@@ -129,7 +133,7 @@
     if (!h) return;
     hits = []; active = -1; renderHits();
     input.value = h.coords ? input.value : h.name;
-    showAt(h.lat, h.lon, h.coords ? null : h.name, true);
+    showAt(h.lat, h.lon, h.coords ? null : h.name, true, h.zone);
   }
 
   input.addEventListener("input", update);

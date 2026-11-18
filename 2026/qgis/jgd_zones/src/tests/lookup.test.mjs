@@ -50,8 +50,13 @@ test("search finds Osaka in four spellings", () => {
   for (const q of ["Ōsaka", "osaka", "Osaka-shi", "大阪"]) {
     const hits = search(PLACES, q);
     assert.ok(hits.length > 0, q);
-    assert.ok(/osaka|大阪/i.test(hits[0].name.normalize("NFKD").replace(/[̀-ͯ]/g, "")), `${q} -> ${hits[0].name}`);
+    assert.ok(/osaka|大阪/i.test(hits[0].name.normalize("NFKD").replace(/[\u0300-\u036f]/g, "")), `${q} -> ${hits[0].name}`);
   }
+});
+
+test("search hits carry the stored zone", () => {
+  const rows = [["Urakawa", "urakawa", 42.1556, 142.7836, 12]];
+  assert.deepEqual(search(rows, "urakawa"), [{ name: "Urakawa", lat: 42.1556, lon: 142.7836, zone: 12 }]);
 });
 
 test("search returns at most the limit and nothing for blanks", () => {

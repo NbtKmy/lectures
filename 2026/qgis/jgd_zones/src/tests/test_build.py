@@ -30,6 +30,13 @@ class TestAssemble(unittest.TestCase):
         m = re.search(r'<script type="application/json" id="zone-data">(.*?)</script>', HTML, re.S)
         self.assertIsNotNone(m)
         self.assertNotIn("</", m.group(1))
+        for ch in "<>&":
+            self.assertNotIn(ch, m.group(1))
+
+    def test_explainer_facts(self):
+        self.assertNotIn("rotated by 90", HTML)
+        self.assertNotIn("all of Japan, one UTM", HTML)
+        self.assertNotIn("as most of Kyushu or all of Japan does, one UTM zone", HTML)
 
     def test_lists_all_19_epsg_codes(self):
         for code in range(6669, 6688):

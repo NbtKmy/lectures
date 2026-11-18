@@ -62,7 +62,9 @@ def assemble(src_dir: Path, updated: date) -> str:
         "info": [{k: z[k] for k in ("zone", "roman", "epsg", "epsg_jgd2000", "origin_lat", "origin_lon", "area_en")}
                  for z in zones],
     }
-    data_json = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+    # Escape the characters that can end or confuse an inline <script>; JSON.parse restores them.
+    data_json = (json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+                 .replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026"))
     values = {
         "style": _read(src_dir, "style.css"),
         "leaflet_css": _read(src_dir, "vendor/leaflet/leaflet.css"),
