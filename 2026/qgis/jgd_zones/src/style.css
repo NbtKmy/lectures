@@ -1,0 +1,135 @@
+:root {
+  color-scheme: dark;
+  --bg: #0e1320;
+  --bg-raised: #141b2d;
+  --panel: #182034;
+  --line: #2a3550;
+  --text: #e8e6df;
+  --text-2: #b9bfd0;
+  --muted: #8f98af;
+  --gold: #f2b84b;
+  --blue: #3987e5;
+  --blue-soft: #9ec5f4;
+  --radius: 10px;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif CJK JP", Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", "Noto Sans CJK JP", Roboto, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 400 1.0625rem/1.6 var(--sans);
+  overflow-x: hidden;
+}
+.wrap { width: 100%; max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+
+a { color: var(--blue-soft); text-underline-offset: 2px; }
+a:hover { color: #fff; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.2; letter-spacing: -0.01em; }
+h2 { font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.1rem); margin: 2.2em 0 0.6em; }
+h3 { font-size: 1.2rem; margin: 1.8em 0 0.5em; }
+p, li { max-width: 68ch; }
+code { overflow-wrap: anywhere; font-family: var(--mono); font-size: 0.9em; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 0.05em 0.35em; }
+ol, ul { padding-left: 1.3em; }
+li { margin: 0.35em 0; }
+
+/* Hero */
+.hero {
+  padding: 40px 0 28px;
+  background:
+    radial-gradient(900px 380px at 15% -10%, rgba(57, 135, 229, 0.22), transparent 70%),
+    repeating-linear-gradient(0deg, transparent 0 31px, rgba(158, 197, 244, 0.05) 31px 32px),
+    repeating-linear-gradient(90deg, transparent 0 31px, rgba(158, 197, 244, 0.05) 31px 32px),
+    var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+.hero h1 { font-size: clamp(1.9rem, 1.2rem + 3.4vw, 3.2rem); margin: 0 0 0.35em; max-width: 20ch; text-wrap: balance; }
+.lede { font-size: 1.15rem; color: var(--text-2); max-width: 60ch; margin: 0 0 12px; }
+.updated { color: var(--muted); font-size: 0.9rem; margin: 0; }
+
+/* Finder */
+.finder { margin: 24px 0 0; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.field { flex: 1 1 280px; min-width: 0; }
+.field label { display: block; color: var(--text-2); font-size: 0.95rem; margin-bottom: 4px; }
+.combo { position: relative; }
+.combo input {
+  width: 100%; background: var(--panel); color: var(--text); border: 1px solid var(--line);
+  border-radius: 8px; padding: 10px 12px; font: inherit;
+}
+.hits {
+  position: absolute; z-index: 1000; left: 0; right: 0; top: calc(100% + 4px);
+  list-style: none; margin: 0; padding: 4px; background: var(--bg-raised); border: 1px solid var(--line); border-radius: 8px;
+  max-height: 320px; overflow-y: auto;
+}
+.hits li { margin: 0; padding: 8px 10px; border-radius: 6px; cursor: pointer; max-width: none; }
+.hits li[aria-selected="true"], .hits li:hover { background: var(--panel); }
+.hits .hit-zone { color: var(--gold); font-size: 0.9rem; margin-left: 6px; }
+.btn {
+  background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 8px;
+  padding: 10px 14px; font: inherit; cursor: pointer;
+}
+.btn:hover { border-color: var(--blue-soft); }
+.btn-small { padding: 4px 10px; font-size: 0.9rem; }
+.status { min-height: 1.6em; color: var(--text-2); font-size: 0.95rem; margin: 8px 0; }
+
+.mapgrid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+.map {
+  width: 100%; height: clamp(360px, 68vh, 620px);
+  background: #0b0f1a; border: 1px solid var(--line); border-radius: var(--radius);
+}
+.leaflet-container { background: #0b0f1a; font-family: var(--sans); }
+.leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.8) contrast(0.9) saturate(0.55); }
+.leaflet-control-attribution { background: rgba(14, 19, 32, 0.8) !important; color: var(--muted) !important; }
+.leaflet-control-attribution a { color: var(--blue-soft) !important; }
+.leaflet-control-zoom a { background: var(--panel) !important; color: var(--text) !important; border-color: var(--line) !important; }
+.zone-label {
+  background: none; border: none; box-shadow: none; color: #fff; font: 700 0.95rem var(--serif);
+  text-shadow: 0 0 3px #000, 0 0 6px #000; padding: 0; cursor: pointer;
+}
+.zone-label::before { display: none; }
+.labels-off .zone-label { display: none; }
+
+/* Result card */
+.card { background: var(--bg-raised); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
+.card-empty { color: var(--muted); margin: 0; }
+.card-place { color: var(--text-2); margin: 0 0 4px; font-size: 0.95rem; }
+.card-zone { font: 600 2rem/1.1 var(--serif); margin: 0; }
+.card-zone span { color: var(--muted); font-size: 1rem; font-family: var(--sans); }
+.card-epsg { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 8px 0 12px; }
+.card-epsg code { font-size: 1.25rem; color: var(--gold); padding: 0.1em 0.4em; }
+.card dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0 0 12px; font-size: 0.95rem; }
+.card dt { color: var(--muted); }
+.card dd { margin: 0; font-family: var(--mono); font-size: 0.9rem; overflow-wrap: anywhere; }
+.card-note { color: var(--muted); font-size: 0.85rem; margin: 0; }
+
+/* Zone table */
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+table.zones { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+.zones th, .zones td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.zones thead th { background: var(--bg-raised); color: var(--text-2); font-weight: 600; }
+.zones tbody th { white-space: nowrap; }
+.zones tr.current { background: rgba(242, 184, 75, 0.12); }
+.zones code { white-space: nowrap; }
+
+/* Explainer */
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.compare-col { background: var(--bg-raised); border: 1px solid var(--line); border-radius: var(--radius); padding: 4px 18px 10px; }
+.compare-col h3 { margin-top: 0.9em; }
+
+.foot { margin-top: 56px; padding: 8px 0 40px; border-top: 1px solid var(--line); color: var(--text-2); font-size: 0.95rem; }
+.foot h2 { font-size: 1.3rem; margin-top: 1.2em; }
+
+@media (max-width: 760px) {
+  .mapgrid, .compare { grid-template-columns: 1fr; }
+  .map { height: 60vh; }
+  .hero { padding: 24px 0 18px; }
+  .lede { font-size: 1rem; }
+  .zones { font-size: 0.875rem; }
+}

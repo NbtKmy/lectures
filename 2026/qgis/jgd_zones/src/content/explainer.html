@@ -1,0 +1,49 @@
+<section id="explainer" aria-labelledby="explainer-h">
+  <h2 id="explainer-h">Plane rectangular coordinates vs WGS84</h2>
+
+  <div class="compare">
+    <div class="compare-col">
+      <h3>WGS84 / JGD2011 latitude–longitude</h3>
+      <p><code>EPSG:4326</code> (WGS84) · <code>EPSG:6668</code> (JGD2011)</p>
+      <ul>
+        <li>A <strong>geographic</strong> coordinate system: positions on the curved Earth, in <strong>degrees</strong>.</li>
+        <li>One system for the whole world. GPS, Google Maps and most downloads use it.</li>
+        <li>A degree is not a fixed distance: one degree of longitude is about 100 km in Okinawa but only about 80 km in northern Hokkaido.</li>
+        <li>For Japan, WGS84 and JGD2011 latitude–longitude agree to within a few centimetres. You can treat them as the same for most maps.</li>
+      </ul>
+    </div>
+    <div class="compare-col">
+      <h3>JGD2011 plane rectangular zones</h3>
+      <p><code>EPSG:6669</code> … <code>EPSG:6687</code> (zones I–XIX)</p>
+      <ul>
+        <li>A <strong>projected</strong> coordinate system: the Earth is flattened onto a plane, positions are in <strong>metres</strong>.</li>
+        <li>Japan is split into 19 zones. Each has its own origin (X = 0, Y = 0) and is accurate to about 1 part in 10,000 inside the zone.</li>
+        <li>Used for surveying, municipal and cadastral data, and any analysis that measures distances or areas.</li>
+        <li>Only valid near its own area: using zone VII for Hokkaido gives distorted shapes and distances.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Why metres matter in QGIS</h3>
+  <p>Tools such as <em>Buffer</em>, <em>Distance matrix</em> and the <code>$area</code> and <code>$length</code> expressions use the units of the layer's CRS. In <code>EPSG:4326</code>, a buffer of “500” means 500 <em>degrees</em>, which is larger than the Earth. Reproject the layer to the zone for your area first, and 500 means 500 metres.</p>
+
+  <h3>X is north, Y is east</h3>
+  <p>In Japan's plane rectangular coordinates, <strong>X points north and Y points east</strong> — the reverse of the usual maths convention. A table of survey points with columns <code>X</code> and <code>Y</code> usually needs X as the <em>northing</em> and Y as the <em>easting</em>. If your points appear in the sea or rotated by 90°, swap the two columns when you load the CSV.</p>
+
+  <h3>JGD2000, JGD2011 and Tokyo Datum</h3>
+  <p>JGD2011 replaced JGD2000 after the 2011 Tōhoku earthquake moved eastern Japan by up to several metres. Older data may use JGD2000 (<code>EPSG:2443</code>–<code>EPSG:2461</code>) or the much older Tokyo Datum, which is offset by about 400–450 m. Check the CRS in the metadata of the data. Don't guess.</p>
+
+  <h3>When to use UTM instead</h3>
+  <p>If your study area spans several zones, as most of Kyushu or all of Japan does, one UTM zone (JGD2011 / UTM zone 51N–55N, <code>EPSG:6688</code>–<code>EPSG:6692</code>) or an equal-area projection is usually the better choice.</p>
+
+  <h3>Set it in QGIS</h3>
+  <ol>
+    <li><strong>Project CRS:</strong> <em>Project ► Properties… ► CRS</em>, search for the EPSG code, for example <code>6675</code>, and click OK. The current project CRS is shown at the lower right of the status bar.</li>
+    <li><strong>Check a layer's CRS:</strong> open the layer's <em>Properties ► Source</em> tab.</li>
+    <li><strong>Convert a layer:</strong> right-click the layer ► <em>Export ► Save Features As…</em>, choose the zone's CRS and save a new file. Or use the Processing tool <em>Reproject layer</em>.</li>
+    <li><strong>Careful:</strong> <em>Layer ► Set CRS of layer(s)</em> only changes the label. It does not convert the coordinates. Use it only when the data has no CRS, or the wrong one, and you know the right one.</li>
+  </ol>
+
+  <h3>Worked example: Moriyama, Nagoya</h3>
+  <p>Moriyama Ward is in Aichi, so it is in zone VII (<span lang="ja">第VII系</span>), <code>EPSG:6675</code>. In the hospital-access exercise of the QGIS session, set the project to <code>EPSG:6675</code> and reproject the hospitals and roads layers to it before buffering. A 10-minute walk can then be set as a distance in metres.</p>
+</section>

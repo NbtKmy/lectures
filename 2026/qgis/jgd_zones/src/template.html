@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="Find the JGD2011 plane rectangular coordinate zone (系 I–XIX) and EPSG code for any place in Japan, and learn how it differs from WGS84.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%230e1320%27/%3E%3Cpath d=%27M16 5v22M5 16h22%27 stroke=%27%23f2b84b%27 stroke-width=%273%27/%3E%3C/svg%3E">
+<title>Japan Zone Finder</title>
+<style>
+{{leaflet_css}}
+</style>
+<style>
+{{style}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <h1>Which coordinate system for my area?</h1>
+    <p class="lede">Japan's plane rectangular zones (JGD2011, <span lang="ja">平面直角座標系</span>). Click the map or search a place to get its zone and the EPSG code to use in QGIS.</p>
+    <p class="updated">Last updated: {{updated}}</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="finder" aria-label="Zone finder">
+    <form class="controls" id="search-form" autocomplete="off" role="search">
+      <div class="field">
+        <label for="q">Place name or coordinates</label>
+        <div class="combo">
+          <input id="q" type="search" placeholder="e.g. Sapporo, 那覇, Chichijima, 35.19, 136.97" aria-controls="hits" aria-autocomplete="list">
+          <ul id="hits" class="hits" role="listbox" hidden></ul>
+        </div>
+      </div>
+      <button type="button" id="locate" class="btn">My location</button>
+    </form>
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+
+    <div class="mapgrid">
+      <div class="map" id="map" aria-label="Map of Japan coloured by plane rectangular zone"></div>
+      <aside class="card" id="result" aria-live="polite">
+        <p class="card-empty">Click anywhere on land, or search above.</p>
+      </aside>
+    </div>
+  </section>
+
+  <section id="zones" aria-labelledby="zones-h">
+    <h2 id="zones-h">All 19 zones</h2>
+    <p>The area of each zone comes from the official notice (<span lang="ja">平成14年国土交通省告示第9号</span>, <a href="{{source_url}}">GSI</a>). JGD2000 codes are listed so you can recognise older data.</p>
+    <div class="tablewrap">
+      <table class="zones">
+        <thead><tr><th scope="col">Zone</th><th scope="col">JGD2011</th><th scope="col">JGD2000</th><th scope="col">Origin</th><th scope="col">Area</th></tr></thead>
+        <tbody>
+{{zone_rows}}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+{{explainer}}
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <h2>Sources and licences</h2>
+    <ul>
+      <li>Zone areas and origins: <a href="{{source_url}}">平面直角座標系（平成十四年国土交通省告示第九号）</a>, Geospatial Information Authority of Japan (GSI).</li>
+      <li>Zone boundaries: 国土数値情報（行政区域データ）N03, edition {{n03_edition}}, MLIT, <a href="https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2025.html">CC BY 4.0</a>. Merged by zone and simplified for this page.</li>
+      <li>Place names: <a href="https://www.geonames.org/">GeoNames</a>, downloaded {{geonames_downloaded}}, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.</li>
+      <li>Background map: <a href="https://maps.gsi.go.jp/development/ichiran.html">地理院タイル</a> (GSI).</li>
+      <li>Libraries: Leaflet 1.9.4 (BSD-2-Clause), proj4js 2.12.1 (MIT).</li>
+    </ul>
+    <p class="updated">Last updated: {{updated}}</p>
+  </div>
+</footer>
+
+<script type="application/json" id="zone-data">{{data_json}}</script>
+<script>
+{{leaflet_js}}
+</script>
+<script>
+{{proj4_js}}
+</script>
+<script>
+{{lookup_js}}
+</script>
+<script>
+{{app_js}}
+</script>
+</body>
+</html>
